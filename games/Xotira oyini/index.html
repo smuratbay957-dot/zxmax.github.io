@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xotira o‘yini</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">Xotira</div>
+      <div class="wallet" title="Balans">
+        <span class="wallet__icon" aria-hidden="true">💰</span>
+        <span class="wallet__val" id="coinDisplay">0</span>
+      </div>
+    </header>
+
+    <!-- Bosh sahifa -->
+    <section class="screen screen--home is-active" id="screenHome">
+      <h1 class="title">Xush kelibsiz</h1>
+      <p class="subtitle">Juftlarni toping, 💰 yig‘ing — zxmax dagi tanlangan profil balansiga o‘tkazing.</p>
+      <div class="menu-actions">
+        <button type="button" class="btn btn--primary btn--wide" id="btnPlay">Play</button>
+        <button type="button" class="btn btn--ghost btn--wide" id="btnShopHome">Do‘kon</button>
+      </div>
+      <div class="transfer-panel">
+        <h2 class="transfer-panel__title">zxmax ga o‘tkazish</h2>
+        <p class="transfer-panel__desc">
+          Bu yerda yig‘ilgan tangalar zxmax dagi <strong>hozirgi profil</strong> balansiga qo‘shiladi
+          (zxmax da «Profil» tugmasidan tanlangan foydalanuvchi), faqat shu brauzerda.
+        </p>
+        <div class="transfer-row">
+          <input
+            type="number"
+            class="transfer-input"
+            id="transferAmount"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            placeholder="Miqdor"
+            aria-label="O‘tkaziladigan miqdor"
+          />
+          <button type="button" class="btn btn--ghost transfer-all" id="transferAllBtn">Hammasi</button>
+        </div>
+        <button type="button" class="btn btn--primary btn--wide" id="transferBtn">zxmax ga o‘tkazish</button>
+        <p class="transfer-hint" id="transferHint"></p>
+        <a class="transfer-link" href="../../zxmax/index.html">zxmax ni ochish →</a>
+      </div>
+    </section>
+
+    <!-- Qiyinlik -->
+    <section class="screen screen--diff" id="screenDiff" hidden>
+      <h2 class="title title--sm">Qiyinlik</h2>
+      <p class="subtitle">Maydon hajmini tanlang</p>
+      <ul class="diff-list">
+        <li>
+          <button type="button" class="diff-btn" data-diff="easy">
+            <span class="diff-btn__name">Oson</span>
+            <span class="diff-btn__meta">4 × 4 · 8 juft</span>
+            <span class="diff-btn__reward">g‘alaba: ~20–40 💰</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="diff-btn" data-diff="medium">
+            <span class="diff-btn__name">O‘rtacha</span>
+            <span class="diff-btn__meta">5 × 5 · 12 juft (1 ta bo‘sh katak)</span>
+            <span class="diff-btn__reward">g‘alaba: ~35–70 💰</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="diff-btn" data-diff="hard">
+            <span class="diff-btn__name">Qiyin</span>
+            <span class="diff-btn__meta">8 × 8 · 32 juft</span>
+            <span class="diff-btn__reward">g‘alaba: ~70–140 💰</span>
+          </button>
+        </li>
+      </ul>
+      <button type="button" class="btn btn--ghost btn--wide" id="btnBackFromDiff">← Orqaga</button>
+    </section>
+
+    <!-- Do‘kon -->
+    <section class="screen screen--shop" id="screenShop" hidden>
+      <h2 class="title title--sm">Do‘kon</h2>
+      <p class="subtitle">Pulingizni bonuslarga almashtiring</p>
+      <ul class="shop-list" id="shopList"></ul>
+      <button type="button" class="btn btn--ghost btn--wide" id="btnBackFromShop">← Bosh sahifa</button>
+    </section>
+
+    <!-- O‘yin -->
+    <section class="screen screen--game" id="screenGame" hidden>
+      <header class="header header--game">
+        <p class="game-mode" id="gameModeLabel">4 × 4</p>
+        <p class="subtitle subtitle--tight" id="gameHint">Juftlarni toping</p>
+      </header>
+
+      <section class="hud" aria-live="polite">
+        <div class="stat">
+          <span class="stat__label">Harakatlar</span>
+          <span class="stat__value" id="moves">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Juftlar</span>
+          <span class="stat__value"><span id="pairs">0</span> / <span id="totalPairs">8</span></span>
+        </div>
+        <button type="button" class="btn btn--ghost" id="resetBtn">Qayta</button>
+        <button type="button" class="btn btn--ghost" id="btnExitGame">Menyu</button>
+      </section>
+
+      <div class="board-scroll">
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="Kartochkalar maydoni"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="win" id="winOverlay" hidden>
+    <div class="win__card">
+      <h2 class="win__title">Tabriklaymiz!</h2>
+      <p class="win__text"><strong id="winMoves">0</strong> harakat, <strong id="winEarn">0</strong> 💰 oldingiz.</p>
+      <button type="button" class="btn btn--primary" id="playAgainBtn">Yana shu daraja</button>
+      <button type="button" class="btn btn--ghost btn--wide win__second" id="winMenuBtn">Menyu</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

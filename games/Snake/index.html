@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Game</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+background:#0a0a1a;
+color:#e0e0ff;
+font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+overflow:hidden
+}
+#gameContainer{
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:12px;
+ padding:20px;
+ border-radius:16px;
+ background:rgba(10,10,30,0.8);
+ border:1px solid rgba(0,255,136,0.2);
+ box-shadow:0 0 40px rgba(0,255,136,0.08),inset 0 0 40px rgba(0,255,136,0.03);
+ width:100%;
+ max-width:520px;
+ margin:0 auto
+}
+#topBar{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ width:100%;
+ max-width:500px;
+ padding:10px 16px;
+ background:rgba(0,0,0,0.4);
+ border-radius:10px;
+ border:1px solid rgba(0,255,136,0.12);
+ flex-wrap:wrap;
+ gap:8px
+}
+#topBar .stat{
+font-size:16px;
+font-weight:600;
+letter-spacing:0.5px
+}
+#topBar .stat .icon{margin-right:4px}
+#topBar .stat .val{color:#00ff88}
+#transferBtn{
+padding:8px 16px;
+font-size:13px;
+font-weight:600;
+background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(0,255,136,0.1));
+color:#00d4ff;
+border:1px solid rgba(0,212,255,0.35);
+border-radius:8px;
+cursor:pointer;
+transition:all .2s;
+text-transform:uppercase;
+letter-spacing:0.5px
+}
+#transferBtn:hover{
+background:linear-gradient(135deg,rgba(0,212,255,0.25),rgba(0,255,136,0.2));
+box-shadow:0 0 20px rgba(0,212,255,0.15);
+transform:translateY(-1px)
+}
+#canvasWrapper{
+position:relative;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 0 30px rgba(0,255,136,0.1)
+}
+canvas{display:block;border-radius:10px;max-width:100%;height:auto}
+#startScreen,#gameOverScreen{
+position:absolute;
+top:0;left:0;right:0;bottom:0;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+background:rgba(5,5,20,0.85);
+backdrop-filter:blur(4px);
+border-radius:10px;
+z-index:10;
+transition:opacity .3s
+}
+#startScreen h1{
+font-size:52px;
+font-weight:900;
+letter-spacing:6px;
+color:#00ff88;
+text-shadow:0 0 30px rgba(0,255,136,0.5),0 0 60px rgba(0,255,136,0.2);
+margin-bottom:8px
+}
+#startScreen p{
+font-size:15px;
+color:rgba(224,224,255,0.5);
+letter-spacing:2px;
+text-transform:uppercase
+}
+#startScreen .keys-hint{
+margin-top:20px;
+display:flex;
+gap:8px
+}
+#startScreen .keys-hint kbd{
+display:inline-block;
+padding:6px 12px;
+background:rgba(0,255,136,0.08);
+border:1px solid rgba(0,255,136,0.2);
+border-radius:6px;
+font-size:13px;
+color:#00ff88;
+font-family:inherit
+}
+#gameOverScreen h1{
+font-size:44px;
+font-weight:900;
+letter-spacing:4px;
+color:#ff3366;
+text-shadow:0 0 30px rgba(255,51,102,0.5),0 0 60px rgba(255,51,102,0.2);
+margin-bottom:16px
+}
+#gameOverScreen .stat-line{
+font-size:16px;
+color:rgba(224,224,255,0.7);
+margin:4px 0
+}
+#gameOverScreen .stat-line span{color:#00ff88;font-weight:700}
+#gameOverScreen .stat-line .bonus{color:#ff3366}
+#restartBtn{
+margin-top:20px;
+padding:12px 36px;
+font-size:16px;
+font-weight:700;
+background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,212,255,0.15));
+color:#00ff88;
+border:1px solid rgba(0,255,136,0.4);
+border-radius:10px;
+cursor:pointer;
+transition:all .2s;
+text-transform:uppercase;
+letter-spacing:1px
+}
+#restartBtn:hover{
+background:linear-gradient(135deg,rgba(0,255,136,0.3),rgba(0,212,255,0.25));
+box-shadow:0 0 25px rgba(0,255,136,0.2);
+transform:translateY(-2px)
+}
+#gameOverScreen.hidden,#startScreen.hidden{display:none}
+.modal-overlay{
+position:fixed;
+top:0;left:0;right:0;bottom:0;
+display:none;
+justify-content:center;
+align-items:center;
+background:rgba(0,0,0,0.7);
+backdrop-filter:blur(6px);
+z-index:100
+}
+.modal-overlay.active{display:flex}
+.modal{
+ background:rgba(10,10,30,0.97);
+ border:1px solid rgba(0,212,255,0.3);
+ border-radius:16px;
+ padding:32px;
+ min-width:unset;
+ width:min(90vw,380px);
+ max-width:380px;
+ box-shadow:0 0 60px rgba(0,212,255,0.1)
+}
+.modal h2{
+font-size:22px;
+font-weight:800;
+color:#00d4ff;
+text-align:center;
+margin-bottom:20px;
+letter-spacing:1px;
+text-shadow:0 0 20px rgba(0,212,255,0.3)
+}
+.modal .info-row{
+display:flex;
+justify-content:space-between;
+padding:10px 0;
+border-bottom:1px solid rgba(255,255,255,0.05);
+font-size:14px
+}
+.modal .info-row:last-of-type{border-bottom:none}
+.modal .info-row .label{color:rgba(224,224,255,0.5)}
+.modal .info-row .value{color:#00ff88;font-weight:600}
+.modal .info-row .value.zxval{color:#00d4ff}
+.modal .info-row .value.error{color:#ff3366}
+.modal .input-group{
+margin:16px 0 12px
+}
+.modal .input-group label{
+display:block;
+font-size:13px;
+color:rgba(224,224,255,0.5);
+margin-bottom:6px
+}
+.modal .input-group input{
+width:100%;
+padding:12px 14px;
+background:rgba(0,0,0,0.5);
+border:1px solid rgba(0,212,255,0.2);
+border-radius:8px;
+color:#e0e0ff;
+font-size:18px;
+font-weight:700;
+outline:none;
+transition:border-color .2s
+}
+.modal .input-group input:focus{
+border-color:rgba(0,212,255,0.6);
+box-shadow:0 0 15px rgba(0,212,255,0.1)
+}
+.modal .input-group input::placeholder{color:rgba(224,224,255,0.2);font-weight:400}
+.modal .btn-group{
+display:flex;
+gap:10px;
+margin-top:18px
+}
+.modal .btn-group button{
+flex:1;
+padding:12px;
+font-size:14px;
+font-weight:700;
+border-radius:8px;
+cursor:pointer;
+transition:all .2s;
+text-transform:uppercase;
+letter-spacing:0.5px
+}
+.modal .btn-primary{
+background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(0,255,136,0.15));
+color:#00ff88;
+border:1px solid rgba(0,255,136,0.35)
+}
+.modal .btn-primary:hover{
+background:linear-gradient(135deg,rgba(0,212,255,0.3),rgba(0,255,136,0.25));
+box-shadow:0 0 20px rgba(0,255,136,0.15)
+}
+.modal .btn-secondary{
+background:rgba(255,255,255,0.05);
+color:rgba(224,224,255,0.6);
+border:1px solid rgba(255,255,255,0.1)
+}
+.modal .btn-secondary:hover{
+background:rgba(255,255,255,0.1);
+color:#e0e0ff
+}
+.modal .msg{
+text-align:center;
+font-size:13px;
+margin-top:12px;
+min-height:20px
+}
+.modal .msg.success{color:#00ff88}
+.modal .msg.error{color:#ff3366}
+
+#dpad{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:8px}
+.dpad-row{display:flex;gap:4px;justify-content:center}
+.dpad-btn{width:64px;height:64px;border-radius:14px;border:1px solid rgba(0,255,136,0.3);background:rgba(0,255,136,0.08);color:#00ff88;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:background 0.1s}
+.dpad-btn:active{background:rgba(0,255,136,0.25)}
+
+@media(max-width:500px){
+  #gameContainer{padding:10px}
+  #topBar{padding:8px 10px}
+  #topBar .stat{font-size:13px}
+  #topBar .stat .val{font-size:13px}
+  #transferBtn{font-size:11px;padding:6px 10px}
+  .dpad-btn{width:52px;height:52px}
+}
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+  <div id="topBar">
+    <span class="stat">🎯 Score: <span class="val" id="scoreDisplay">0</span></span>
+    <span class="stat">🪙 Coins: <span class="val" id="coinsDisplay">0</span></span>
+    <button id="transferBtn">⟳ zxmax ga o'tkazish</button>
+  </div>
+  <div id="canvasWrapper">
+    <canvas id="gameCanvas" width="500" height="500"></canvas>
+    <div id="startScreen">
+      <h1>SNAKE</h1>
+      <p>← ↑ → ↓ boshlash uchun</p>
+      <div class="keys-hint">
+        <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>
+      </div>
+    </div>
+    <div id="gameOverScreen" class="hidden">
+      <h1>GAME OVER</h1>
+      <p class="stat-line">Score: <span id="finalScore">0</span></p>
+      <p class="stat-line">Coins: <span id="finalCoinsEarned">0</span></p>
+      <p class="stat-line" style="font-size:13px;color:rgba(224,224,255,0.4)">
+        ( <span id="foodCoinsLabel">0</span> from food +
+        <span class="bonus" id="bonusCoinsLabel">0</span> bonus )
+      </p>
+      <button id="restartBtn">▶ Play Again</button>
+    </div>
+  </div>
+  <div id="dpad">
+    <div class="dpad-row"><button class="dpad-btn" data-dir="up">▲</button></div>
+    <div class="dpad-row"><button class="dpad-btn" data-dir="left">◀</button><button class="dpad-btn" data-dir="down">▼</button><button class="dpad-btn" data-dir="right">▶</button></div>
+  </div>
+  <a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.25);font-size:12px;text-decoration:none;margin-top:10px;padding:6px;border-radius:6px;background:rgba(0,0,0,0.2)">← zxmax ga qaytish</a>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>⟳ zxmax ga o'tkazish</h2>
+    <div class="info-row"><span class="label">🐍 Snake coins</span><span class="value" id="modalSnakeCoins">0</span></div>
+    <div class="info-row"><span class="label">👤 zxmax profile</span><span class="value zxval" id="modalProfile">—</span></div>
+    <div class="info-row"><span class="label">💰 zxmax coins</span><span class="value zxval" id="modalZxCoins">0</span></div>
+    <div class="input-group">
+      <label for="transferAmount">O'tkazma miqdori</label>
+      <input type="number" id="transferAmount" min="1" placeholder="0">
+      <button type="button" id="transferAllBtn" style="background:rgba(255,255,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:8px;color:#00d4ff;padding:8px 12px;font-size:13px;cursor:pointer;margin-top:6px;width:100%;touch-action:manipulation">Hammasini o'tkazish (all)</button>
+    </div>
+    <div class="btn-group">
+      <button class="btn-primary" id="confirmTransfer">O'tkazish</button>
+      <button class="btn-secondary" id="closeModal">Yopish</button>
+    </div>
+    <div class="msg" id="transferMsg"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const GRID = 20, CELL = 25, SIZE = GRID * CELL, TICK = 150;
+  const LS_COINS = 'snake_coins';
+  const LS_ZX_ACTIVE = 'zxmax_active_profile_v1';
+  const LS_ZX_FALLBACK = 'zxmax_save_v1';
+
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const coinsDisplay = document.getElementById('coinsDisplay');
+  const startScreen = document.getElementById('startScreen');
+  const gameOverScreen = document.getElementById('gameOverScreen');
+  const finalScore = document.getElementById('finalScore');
+  const finalCoinsEarned = document.getElementById('finalCoinsEarned');
+  const foodCoinsLabel = document.getElementById('foodCoinsLabel');
+  const bonusCoinsLabel = document.getElementById('bonusCoinsLabel');
+  const restartBtn = document.getElementById('restartBtn');
+  const transferBtn = document.getElementById('transferBtn');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalSnakeCoins = document.getElementById('modalSnakeCoins');
+  const modalProfile = document.getElementById('modalProfile');
+  const modalZxCoins = document.getElementById('modalZxCoins');
+  const transferAmount = document.getElementById('transferAmount');
+  const confirmTransfer = document.getElementById('confirmTransfer');
+  const closeModal = document.getElementById('closeModal');
+  const transferMsg = document.getElementById('transferMsg');
+
+  let snake, direction, nextDirection, food, score, foodEaten;
+  let gameState = 'start';
+  let gameLoop = null;
+
+  function getSnakeCoins(){
+    return parseInt(localStorage.getItem(LS_COINS)||'0',10);
+  }
+  function setSnakeCoins(v){
+    localStorage.setItem(LS_COINS,String(v));
+  }
+  function addSnakeCoins(amount){
+    const c=getSnakeCoins()+amount;
+    setSnakeCoins(c);
+    return c;
+  }
+
+  function getZxmaxState(){
+    const profileId=localStorage.getItem(LS_ZX_ACTIVE);
+    let raw=null;
+    if(profileId){
+      raw=localStorage.getItem('zxmax_save_v1__'+profileId);
+    }
+    if(!raw){
+      raw=localStorage.getItem(LS_ZX_FALLBACK);
+    }
+    if(raw){
+      try{return JSON.parse(raw)}catch(e){return null}
+    }
+    return null;
+  }
+  function saveZxmaxState(state,profileId){
+    const pid=profileId||localStorage.getItem(LS_ZX_ACTIVE);
+    if(pid){
+      localStorage.setItem('zxmax_save_v1__'+pid,JSON.stringify(state));
+    }else{
+      localStorage.setItem(LS_ZX_FALLBACK,JSON.stringify(state));
+    }
+  }
+  function getZxmaxProfileId(){
+    return localStorage.getItem(LS_ZX_ACTIVE);
+  }
+
+  function defaultZxmaxState(){
+    return {
+      coins:0,totalEarned:0,totalSpent:0,
+      purchases:{},lastDaily:null,lastQuickEarn:0,theme:'default'
+    };
+  }
+
+  function spawnFood(){
+    if(snake.length>=GRID*GRID)return;
+    let free=[];
+    for(let x=0;x<GRID;x++)
+      for(let y=0;y<GRID;y++)
+        if(!snake.some(s=>s.x===x&&s.y===y)) free.push({x,y});
+    if(free.length){
+      const f=free[Math.floor(Math.random()*free.length)];
+      food={x:f.x,y:f.y};
+    }
+  }
+
+  function resetGame(){
+    snake=[{x:10,y:10}];
+    direction={x:0,y:0};
+    nextDirection={x:0,y:0};
+    score=0;
+    foodEaten=0;
+    spawnFood();
+    updateUI();
+  }
+
+  function updateUI(){
+    scoreDisplay.textContent=score;
+    coinsDisplay.textContent=getSnakeCoins();
+  }
+
+  function gameOverHandler(){
+    gameState='gameover';
+    if(gameLoop){clearInterval(gameLoop);gameLoop=null}
+    const bonus=score*2;
+    const foodCoins=foodEaten*5;
+    const total=foodCoins+bonus;
+    addSnakeCoins(total);
+    finalScore.textContent=score;
+    finalCoinsEarned.textContent=total;
+    foodCoinsLabel.textContent=foodCoins;
+    bonusCoinsLabel.textContent=bonus;
+    gameOverScreen.classList.remove('hidden');
+    updateUI();
+  }
+
+  function move(){
+    direction={...nextDirection};
+    if(direction.x===0&&direction.y===0){
+      draw();return;
+    }
+    const head={x:snake[0].x+direction.x,y:snake[0].y+direction.y};
+    if(head.x<0||head.x>=GRID||head.y<0||head.y>=GRID){gameOverHandler();return}
+    if(snake.some(s=>s.x===head.x&&s.y===head.y)){gameOverHandler();return}
+    snake.unshift(head);
+    if(head.x===food.x&&head.y===food.y){
+      score++;
+      foodEaten++;
+      addSnakeCoins(5);
+      spawnFood();
+      updateUI();
+    }else{
+      snake.pop();
+    }
+    draw();
+  }
+
+  function draw(){
+    ctx.fillStyle='#0a0a1a';
+    ctx.fillRect(0,0,SIZE,SIZE);
+    ctx.strokeStyle='rgba(0,255,136,0.04)';
+    ctx.lineWidth=1;
+    for(let i=0;i<=GRID;i++){
+      ctx.beginPath();ctx.moveTo(i*CELL,0);ctx.lineTo(i*CELL,SIZE);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,i*CELL);ctx.lineTo(SIZE,i*CELL);ctx.stroke();
+    }
+    ctx.shadowColor='#ff3366';
+    ctx.shadowBlur=22;
+    ctx.fillStyle='#ff3366';
+    ctx.beginPath();
+    ctx.arc(food.x*CELL+CELL/2,food.y*CELL+CELL/2,CELL/2-2,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+    snake.forEach((seg,i)=>{
+      const isHead=i===0;
+      const x=seg.x*CELL+1.5,y=seg.y*CELL+1.5,s=CELL-3,r=5;
+      ctx.shadowColor='#00ff88';
+      ctx.shadowBlur=isHead?18:10;
+      ctx.fillStyle=isHead?'#00ff88':'#00cc66';
+      ctx.beginPath();
+      ctx.moveTo(x+r,y);
+      ctx.lineTo(x+s-r,y);
+      ctx.quadraticCurveTo(x+s,y,x+s,y+r);
+      ctx.lineTo(x+s,y+s-r);
+      ctx.quadraticCurveTo(x+s,y+s,x+s-r,y+s);
+      ctx.lineTo(x+r,y+s);
+      ctx.quadraticCurveTo(x,y+s,x,y+s-r);
+      ctx.lineTo(x,y+r);
+      ctx.quadraticCurveTo(x,y,x+r,y);
+      ctx.closePath();
+      ctx.fill();
+      if(isHead){
+        ctx.fillStyle='rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.arc(x+s*0.35,y+s*0.35,s*0.08,0,Math.PI*2);
+        ctx.arc(x+s*0.65,y+s*0.35,s*0.08,0,Math.PI*2);
+        ctx.fill();
+      }
+    });
+    ctx.shadowBlur=0;
+  }
+
+  function drawInitial(){
+    snake=[{x:10,y:10}];
+    direction={x:0,y:0};
+    nextDirection={x:0,y:0};
+    score=0;
+    foodEaten=0;
+    spawnFood();
+    draw();
+    updateUI();
+  }
+
+  function startGame(dir){
+    gameState='playing';
+    startScreen.classList.add('hidden');
+    gameOverScreen.classList.add('hidden');
+    resetGame();
+    if(dir){nextDirection={...dir};direction={...dir}}
+    draw();
+    if(gameLoop)clearInterval(gameLoop);
+    gameLoop=setInterval(move,TICK);
+  }
+
+  document.addEventListener('keydown',e=>{
+    if(gameState==='start'){
+      const map={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}};
+      const dir=map[e.key];
+      if(dir){
+        e.preventDefault();
+        startGame(dir);
+      }
+      return;
+    }
+    if(gameState==='playing'){
+      const map={
+        ArrowUp:    ()=>nextDirection.y!==1&&(nextDirection={x:0,y:-1}),
+        ArrowDown:  ()=>nextDirection.y!==-1&&(nextDirection={x:0,y:1}),
+        ArrowLeft:  ()=>nextDirection.x!==1&&(nextDirection={x:-1,y:0}),
+        ArrowRight: ()=>nextDirection.x!==-1&&(nextDirection={x:1,y:0})
+      };
+      if(map[e.key]){e.preventDefault();map[e.key]()}
+      return;
+    }
+    if(gameState==='gameover'&&(e.key==='Enter'||e.key===' ')){
+      e.preventDefault();
+      startGame({x:0,y:-1});
+    }
+  });
+
+  document.querySelectorAll('.dpad-btn').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      const dirMap={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
+      const dir=dirMap[this.dataset.dir];
+      if(!dir)return;
+      if(gameState==='start'){
+        startGame(dir);
+      }else if(gameState==='playing'){
+        if(dir.x!==0){
+          if(nextDirection.x===0)nextDirection={...dir};
+        }else if(dir.y!==0){
+          if(nextDirection.y===0)nextDirection={...dir};
+        }
+      }else if(gameState==='gameover'){
+        startGame(dir);
+      }
+    });
+  });
+
+  restartBtn.addEventListener('click',()=>startGame({x:0,y:-1}));
+
+  transferBtn.addEventListener('click',()=>{
+    if(gameState==='playing'){
+      if(gameLoop)clearInterval(gameLoop);
+      gameLoop=null;
+    }
+    const profileId=getZxmaxProfileId();
+    const zxState=getZxmaxState();
+    modalSnakeCoins.textContent=getSnakeCoins();
+    modalProfile.textContent=profileId||'default';
+    modalZxCoins.textContent=zxState?zxState.coins:0;
+    transferAmount.value=getSnakeCoins();
+    transferMsg.textContent='';
+    transferMsg.className='msg';
+    modalOverlay.classList.add('active');
+    setTimeout(()=>transferAmount.focus(),100);
+  });
+
+  closeModal.addEventListener('click',()=>{
+    modalOverlay.classList.remove('active');
+    if(gameState==='playing'&&!gameLoop){
+      gameLoop=setInterval(move,TICK);
+    }
+  });
+
+  modalOverlay.addEventListener('click',e=>{
+    if(e.target===modalOverlay){
+      modalOverlay.classList.remove('active');
+      if(gameState==='playing'&&!gameLoop){
+        gameLoop=setInterval(move,TICK);
+      }
+    }
+  });
+
+  confirmTransfer.addEventListener('click',()=>{
+    const amount=parseInt(transferAmount.value,10);
+    const snakeCoins=getSnakeCoins();
+    if(!amount||amount<=0){
+      transferMsg.textContent='Musbat son kiriting!';
+      transferMsg.className='msg error';
+      return;
+    }
+    if(amount>snakeCoins){
+      transferMsg.textContent='Hisobingizda yetarli coin yo\'q!';
+      transferMsg.className='msg error';
+      return;
+    }
+    const profileId=getZxmaxProfileId();
+    let zxState=getZxmaxState();
+    if(!zxState){
+      zxState=defaultZxmaxState();
+    }
+    zxState.coins+=amount;
+    zxState.totalEarned+=amount;
+    saveZxmaxState(zxState,profileId);
+    const newBalance=snakeCoins-amount;
+    setSnakeCoins(newBalance);
+    modalSnakeCoins.textContent=newBalance;
+    modalZxCoins.textContent=zxState.coins;
+    updateUI();
+    transferMsg.textContent='Muvaffaqiyatli o\'tkazildi! ✅';
+    transferMsg.className='msg success';
+    transferAmount.value='';
+  });
+
+  document.getElementById('transferAllBtn').addEventListener('click',function(){
+    transferAmount.value = getSnakeCoins();
+  });
+
+  // init
+  drawInitial();
+})();
+</script>
+</body>
+</html>

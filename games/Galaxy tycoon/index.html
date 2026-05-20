@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Galaxy Tycoon: Ultra Edition</title>
+    <link rel="icon" href="https://img.icons8.com/fluency/48/rocket.png">
+    <style>
+        :root { 
+            --bg: #020617; --accent: #3b82f6; --gold: #ffd700; --green: #10b981; --red: #ef4444;
+        }
+        body {
+            margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden; user-select: none;
+        }
+
+        #stars-container { position: fixed; inset: 0; z-index: 0; background: radial-gradient(circle, #0f172a, #020617); }
+        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle var(--d) infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+        .stats-bar {
+            position: fixed; top: 0; width: 100%; display: flex; justify-content: space-around;
+            padding: 15px; background: rgba(15, 23, 42, 0.9); border-bottom: 2px solid var(--gold); z-index: 2000;
+        }
+
+        #main-menu, .modal {
+            position: fixed; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 1500; gap: 15px;
+            background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(15px);
+        }
+
+        .menu-card {
+            background: rgba(30, 41, 59, 0.6); padding: 30px; border-radius: 25px;
+            border: 1px solid rgba(255,255,255,0.1); text-align: center; width: min(90vw, 350px);
+            position: relative;
+        }
+
+        #promo-status {
+            position: absolute; top: -60px; left: 0; width: 100%;
+            font-size: 22px; font-weight: 800; text-shadow: 0 0 15px rgba(0,0,0,0.8);
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-height: 30px;
+        }
+
+        @keyframes bounceIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .scroll-container {
+            width: 90%; max-width: 900px; max-height: min(60vh, 500px); overflow-y: auto;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px; padding: 20px; scrollbar-width: thin; scrollbar-color: var(--gold) transparent;
+        }
+
+        .card { 
+            background: #1e293b; padding: 15px; border-radius: 15px; text-align: center; 
+            border: 2px solid transparent; transition: 0.3s;
+        }
+        .card.active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
+        .card h3 { margin: 5px 0; color: var(--accent); font-size: 16px; }
+
+        .btn {
+            padding: 12px 20px; border: none; border-radius: 12px; cursor: pointer;
+            font-weight: bold; transition: 0.3s; background: var(--accent); color: white;
+        }
+        .btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+        
+        .btn.error-btn { background: var(--red) !important; animation: shake 0.3s ease; }
+
+        .promo-input {
+            padding: 10px; border-radius: 8px; border: 1px solid var(--accent);
+            background: #0f172a; color: white; width: 80%; text-align: center;
+            font-size: 18px; margin-bottom: 10px;
+        }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        #game-area { width: 100vw; height: 100vh; position: fixed; top:0; left:0; display: none; z-index: 1200; }
+        #play-zone { width: 100%; height: 100%; position: relative; }
+        .target { 
+            position: absolute; font-size: 80px; cursor: pointer; 
+            filter: drop-shadow(0 0 15px white); transition: transform 0.1s; 
+            transform: translate(-50%, -50%);
+        }
+
+        .black-hole {
+            position: absolute; width: 100px; height: 100px;
+            background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%);
+            border-radius: 50%; backdrop-filter: blur(4px) contrast(150%);
+            cursor: pointer; z-index: 1300; transform: translate(-50%, -50%);
+            transition: all 0.5s ease; border: 1px solid rgba(255,255,255,0.05);
+            animation: pulse-hole 2s infinite alternate;
+        }
+
+        @keyframes pulse-hole { from { transform: translate(-50%, -50%) scale(0.9); opacity: 0.2; } to { transform: translate(-50%, -50%) scale(1.1); opacity: 0.4; } }
+
+        @media (max-width: 480px) {
+            .stats-bar { padding: 10px 5px; font-size: 12px; }
+            .stats-bar > div { font-size: 12px; }
+            #main-menu h1 { font-size: 28px !important; }
+            .menu-card { padding: 20px; }
+            .menu-card h2 { font-size: 18px; }
+            .btn { font-size: 12px; padding: 10px 12px; }
+            #main-menu > div { grid-template-columns: 1fr !important; }
+            #main-menu > button { width: 90% !important; font-size: 16px !important; }
+            .scroll-container { grid-template-columns: 1fr; }
+            .promo-input { font-size: 14px; }
+            #game-time { font-size: 28px !important; }
+        }
+    </style>
+</head>
+<body onclick="initAudio()">
+
+    <div id="stars-container"></div>
+
+    <div class="stats-bar">
+        <div>Pul: <span id="stat-bal" style="color:var(--gold)">0</span> 💰</div>
+        <div>Keladigon foyda: <span id="stat-psv" style="color:var(--green)">0</span> 💰 / 2s</div>
+    </div>
+
+    <div id="main-menu">
+        <h1 style="font-size: 45px; color: var(--gold); margin: 0; text-shadow: 0 0 20px var(--gold);">GALAXY TYCOON</h1>
+        <p>Keyingi sovg‘a: <span id="daily-timer">...</span></p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <button class="btn" id="daily-btn" onclick="claimDaily()">SOVGA 🎁</button>
+            <button class="btn" style="background:#f59e0b" onclick="openModal('upgrade-modal')">Yangiliklar 🏗️</button>
+            <button class="btn" style="background:#8b5cf6" onclick="openModal('auction-modal')">AUKSION ⚖️</button>
+            <button class="btn" style="background:#ec4899" onclick="openModal('shop-modal')">Do'kon 🎭</button>
+            <button class="btn" style="background:#4b5563; grid-column: span 2;" onclick="openModal('promo-modal')">PROMO-KOD 🎟️</button>
+            <button class="btn" style="background:#f97316; grid-column: span 2;" onclick="openTransferModal()">zxmax ga o'tkazish 💰</button>
+        </div>
+        <button class="btn" style="width: 300px; margin-top: 20px; font-size: 20px; background: #10b981;" onclick="startGame()">Oyinni boshlash 🚀</button>
+        <a href="../../zxmax/index.html" style="position:fixed;bottom:10px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.4);font-size:13px;text-decoration:none;z-index:2000;padding:8px 16px;border-radius:8px;background:rgba(0,0,0,0.3);backdrop-filter:blur(4px)">← zxmax ga qaytish</a>
+    </div>
+
+    <div id="promo-modal" class="modal" style="display:none;">
+        <div class="menu-card">
+            <div id="promo-status"></div> 
+            <h2 style="color:var(--accent)">PROMO-KOD</h2>
+            <input type="text" id="promo-input" class="promo-input" placeholder="KODNI KIRITING...">
+            <button class="btn" style="width: 100%;" onclick="checkPromo()">TEKSHIRISH</button>
+            <button class="btn" style="background:transparent; margin-top:10px;" onclick="closeModals()">Orqaga</button>
+        </div>
+    </div>
+
+    <div id="upgrade-modal" class="modal" style="display:none;">
+        <h2 style="color:var(--gold)">KOSMIK ZAVODLAR</h2>
+        <div class="scroll-container" id="upgrade-list"></div>
+        <button class="btn" style="background:#475569" onclick="closeModals()">Yobish</button>
+    </div>
+
+    <div id="auction-modal" class="modal" style="display:none;">
+        <div class="menu-card">
+            <h2 style="color:#8b5cf6">KOSMİK AUKSION</h2>
+            <p>Tikuv bahosi: <b>50,000 💰</b></p>
+            <p id="auc-status" style="margin: 20px 0;">Pul tikilmadi</p>
+            <button class="btn" id="auc-btn" style="background:#8b5cf6; width: 100%;" onclick="bidAuction()">STAVKA TIGILDI</button>
+            <button class="btn" style="background:transparent; margin-top:10px;" onclick="closeModals()">ORQAGA</button>
+        </div>
+    </div>
+
+    <div id="shop-modal" class="modal" style="display:none;">
+        <h2 style="color:var(--gold)">ELEMENTLAR DO'KONI</h2>
+        <div class="scroll-container" id="shop-list"></div>
+        <button class="btn" style="background:#475569" onclick="closeModals()">Yobish</button>
+    </div>
+
+    <div id="transfer-modal" class="modal" style="display:none;">
+        <div class="menu-card">
+            <h2 style="color:var(--gold)">zxmax ga o'tkazish</h2>
+            <p style="color:#94a3b8; font-size:14px;">Galaxy Tycoon pullarini zxmax asosiy balansiga o'tkazing.</p>
+            <p style="margin:10px 0;">Joriy pul: <b style="color:var(--gold)" id="transfer-bal">0</b> 💰</p>
+            <input type="number" id="transfer-amount" class="promo-input" placeholder="Miqdor" min="1" style="width:100%;">
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn" style="flex:1; background:#475569;" onclick="document.getElementById('transfer-amount').value = gameData.balance">Hammasi</button>
+                <button class="btn" style="flex:1; background:#10b981;" id="transfer-btn">O'tkazish</button>
+            </div>
+            <p id="transfer-status" style="font-size:14px; min-height:20px; margin:10px 0;"></p>
+            <button class="btn" style="background:transparent; margin-top:5px;" onclick="closeModals()">Orqaga</button>
+        </div>
+    </div>
+
+    <div id="result-modal" class="modal" style="display:none;">
+        <div class="menu-card">
+            <h1 style="color:var(--gold)">VAQIT BITTI!</h1>
+            <p>Qo'lga keltirilgen pul:</p>
+            <h2 id="round-res" style="color:var(--green)">0 💰</h2>
+            <button class="btn" onclick="closeResult()">MENUGA QAYTISH</button>
+        </div>
+    </div>
+
+    <div id="game-area">
+        <div id="play-zone"></div>
+        <div style="position:fixed; top:100px; left:30px; font-size:40px; font-weight:bold; color:#ef4444; text-shadow: 2px 2px #000; z-index:2100;">⏱️ <span id="game-time">30</span></div>
+    </div>
+
+    <script>
+        const sounds = {
+            click: new Audio('https://www.fesliyanstudios.com/play-mp3/6'),
+            error: new Audio('https://www.fesliyanstudios.com/play-mp3/546'),
+            win: new Audio('https://www.fesliyanstudios.com/play-mp3/2360'),
+            bg: new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3')
+        };
+        sounds.bg.loop = true; sounds.bg.volume = 0.3;
+
+        let audioInitialized = false;
+        function initAudio() {
+            if(!audioInitialized) {
+                sounds.bg.play().catch(() => {});
+                audioInitialized = true;
+            }
+        }
+
+        const items = [
+            { id: 'c1', icon: '🪙', name: 'Tanga', reward: 10, price: 0 },
+            { id: 'c2', icon: '💎', name: 'Almoz', reward: 25, price: 1500 },
+            { id: 'c3', icon: '⭐', name: 'Yulduz', reward: 60, price: 5000 },
+            { id: 'c4', icon: '🌙', name: 'Oy', reward: 150, price: 12000 },
+            { id: 'c5', icon: '🌍', name: 'Yer', reward: 350, price: 30000 },
+            { id: 'c6', icon: '🔴', name: 'Mars', reward: 750, price: 75000 },
+            { id: 'c7', icon: '🪐', name: 'Saturn', reward: 1600, price: 150000 },
+            { id: 'c8', icon: '☀️', name: 'Kún', reward: 3500, price: 350000 },
+            { id: 'c9', icon: '🚀', name: 'Raketa', reward: 8000, price: 800000 },
+            { id: 'c10', icon: '🛸', name: 'Ushar lukobcha', reward: 15000, price: 1800000 },
+            { id: 'c11', icon: '🛰️', name: 'Sputnik', reward: 30000, price: 4000000 },
+            { id: 'c12', icon: '☄️', name: 'Kometa', reward: 65000, price: 9000000 },
+            { id: 'c13', icon: '🌌', name: 'Tuman', reward: 120000, price: 18000000 },
+            { id: 'c14', icon: '🌀', name: 'Galaktika', reward: 250000, price: 40000000 },
+            { id: 'c15', icon: '🕳️', name: 'Qora Tuynik', reward: 550000, price: 90000000 },
+            { id: 'c16', icon: '⚛️', name: 'Kvazar', reward: 1200000, price: 200000000 },
+            { id: 'c17', icon: '💎', name: 'Neytron Yulduz', reward: 2800000, price: 500000000 },
+            { id: 'c18', icon: '🧿', name: 'Bosliq', reward: 6000000, price: 1200000000 },
+            { id: 'c19', icon: '🗺️', name: 'Multidunya', reward: 15000000, price: 3000000000 },
+            { id: 'c20', icon: '👑', name: 'Yaratuvchi', reward: 40000000, price: 8000000000 },
+            { id: 'c21', icon: '⚡', name: 'Gipershayba', reward: 100000000, price: 20000000000 },
+            { id: 'c22', icon: '💥', name: 'Supernova', reward: 250000000, price: 50000000000 },
+            { id: 'c23', icon: '💎', name: 'Olmaz Ploneta', reward: 600000000, price: 150000000000 },
+            { id: 'c24', icon: '🏮', name: 'Energiya Zavodi', reward: 1500000000, price: 400000000000 },
+            { id: 'c25', icon: '♾️', name: 'Mabudlar Kuchi', reward: 50000000000, price: 100000000000 }
+        ];
+
+        const upgradeTypes = [
+            { name: "Konchi Bot", icon: "🤖", basePrice: 500, power: 5 },
+            { name: "Kislorod Zavodı", icon: "🏭", basePrice: 5000, power: 45 },
+            { name: "Quyosh Panellari", icon: "🛰️", basePrice: 25000, power: 220 },
+            { name: "Galaktika Banki", icon: "🏦", basePrice: 120000, power: 1100 },
+            { name: "Oy Makoni", icon: "🏢", basePrice: 600000, power: 5500 },
+            { name: "Mars Koloniyası", icon: "🛖", basePrice: 3500000, power: 32000 },
+            { name: "Yulduz Ustaxonasi", icon: "🔨", basePrice: 20000000, power: 180000 },
+            { name: "olsham Qamogi", icon: "🚪", basePrice: 150000000, power: 1200000 },
+            { name: "Matrica Ozagi", icon: "🖥️", basePrice: 1000000000, power: 9000000 },
+            { name: "Ilahiy Qollar", icon: "👐", basePrice: 10000000000, power: 100000000 }
+        ];
+
+        let gameData = {
+            balance: parseInt(localStorage.getItem('gt_bal')) || 0,
+            pasiv: parseInt(localStorage.getItem('gt_psv')) || 0,
+            lastDaily: parseInt(localStorage.getItem('gt_daily')) || 0,
+            unlocked: JSON.parse(localStorage.getItem('gt_unl')) || ['c1'],
+            active: localStorage.getItem('gt_active') || 'c1',
+            upgrades: JSON.parse(localStorage.getItem('gt_up_lvl')) || new Array(upgradeTypes.length).fill(0),
+            usedPromos: JSON.parse(localStorage.getItem('gt_promos')) || []
+        };
+
+        function save() {
+            localStorage.setItem('gt_bal', Math.floor(gameData.balance));
+            localStorage.setItem('gt_psv', gameData.pasiv);
+            localStorage.setItem('gt_daily', gameData.lastDaily);
+            localStorage.setItem('gt_unl', JSON.stringify(gameData.unlocked));
+            localStorage.setItem('gt_active', gameData.active);
+            localStorage.setItem('gt_up_lvl', JSON.stringify(gameData.upgrades));
+            localStorage.setItem('gt_promos', JSON.stringify(gameData.usedPromos));
+        }
+
+        function updateUI() {
+            document.getElementById('stat-bal').innerText = Math.floor(gameData.balance).toLocaleString();
+            document.getElementById('stat-psv').innerText = gameData.pasiv.toLocaleString();
+            const now = Date.now();
+            const timerTxt = document.getElementById('daily-timer');
+            if (now - gameData.lastDaily > 86400000) {
+                timerTxt.innerText = "Tayyor! ✅";
+                document.getElementById('daily-btn').disabled = false;
+            } else {
+                timerTxt.innerText = "KUTISHDA ⏳";
+                document.getElementById('daily-btn').disabled = true;
+            }
+        }
+
+        setInterval(() => {
+            if(gameData.pasiv > 0) {
+                gameData.balance += gameData.pasiv;
+                save(); 
+                updateUI();
+            }
+        }, 2000); 
+
+        function startGame() {
+            sounds.click.play();
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            let time = 30;
+            let currentGain = 0;
+            const activeItem = items.find(i => i.id === gameData.active) || items[0];
+            const zone = document.getElementById('play-zone');
+            zone.innerHTML = ''; 
+
+            const bh = document.createElement('div');
+            bh.className = 'black-hole';
+            zone.appendChild(bh);
+
+            const moveBlackHole = () => {
+                bh.style.left = (Math.random() * 80 + 10) + '%';
+                bh.style.top = (Math.random() * 80 + 10) + '%';
+            }
+            moveBlackHole();
+            const bhTimer = setInterval(moveBlackHole, 2500);
+
+            const handleBlackHole = (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                sounds.error.play();
+                const loss = Math.floor(activeItem.reward * 10);
+                gameData.balance = Math.max(0, gameData.balance - loss);
+                currentGain -= loss;
+                bh.style.background = "rgba(239, 68, 68, 0.5)";
+                setTimeout(() => bh.style.background = "radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%)", 300);
+                updateUI();
+            };
+            bh.onmousedown = handleBlackHole;
+            bh.ontouchstart = handleBlackHole;
+
+            const spawn = () => {
+                const oldTarget = zone.querySelector('.target');
+                if(oldTarget) oldTarget.remove();
+                const t = document.createElement('div');
+                t.className = 'target';
+                t.innerHTML = activeItem.icon;
+                const x = Math.floor(Math.random() * 70) + 15;
+                const y = Math.floor(Math.random() * 70) + 15;
+                t.style.left = x + '%'; t.style.top = y + '%';
+                const handleTarget = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    sounds.click.currentTime = 0;
+                    sounds.click.play();
+                    gameData.balance += activeItem.reward;
+                    currentGain += activeItem.reward;
+                    updateUI(); spawn();
+                };
+                t.onmousedown = handleTarget;
+                t.ontouchstart = handleTarget;
+                zone.appendChild(t);
+            };
+
+            spawn();
+            const clock = setInterval(() => {
+                time--;
+                document.getElementById('game-time').innerText = time;
+                if(time <= 0) {
+                    clearInterval(clock);
+                    clearInterval(bhTimer);
+                    sounds.win.play();
+                    document.getElementById('game-area').style.display = 'none';
+                    document.getElementById('round-res').innerText = currentGain.toLocaleString() + " 💰";
+                    document.getElementById('result-modal').style.display = 'flex';
+                    save();
+                }
+            }, 1000);
+        }
+
+        function checkPromo() {
+            const input = document.getElementById('promo-input');
+            const status = document.getElementById('promo-status');
+            const code = input.value.trim().toUpperCase();
+            if (code === "") { status.innerText = "KODNI YOZING! ⌨️"; return; }
+            if (gameData.usedPromos.includes(code)) { status.innerText = " ALLAQACHON ISHLATILGAN! ❌"; return; }
+            
+            // PROMO-KODLAR DIZIMI
+            const promoCodes = { 
+                "MARS": 100000, 
+                "FREE": 50000, 
+                "GEMINI": 5000000, 
+                "GEMINI-3": 10000000, 
+                "QARAQALPAQSTAN": 10000000,
+                "TAXTAKOPIR": 10000000,
+                "NUKUS": 10000000,
+                "AZIKO": 100000000,
+                "UZBEKISTAN": 100000000,
+                "ZEKO": 1000000000000000000000,
+            };
+
+            if (promoCodes[code]) {
+                const reward = promoCodes[code];
+                gameData.balance += reward;
+                gameData.usedPromos.push(code);
+                save(); updateUI();
+                sounds.win.play();
+                status.innerText = "TABRIKLAYMAN! +" + reward.toLocaleString() + " 💰";
+                status.style.color = "var(--green)";
+                input.value = "";
+                setTimeout(closeModals, 2000);
+            } else { status.innerText = "NOTO‘G‘RI KOD! ❌"; status.style.color = "var(--red)"; sounds.error.play(); }
+        }
+
+        function renderUpgrades() {
+            const list = document.getElementById('upgrade-list');
+            list.innerHTML = '';
+            upgradeTypes.forEach((u, i) => {
+                const level = gameData.upgrades[i] || 0;
+                const cost = Math.floor(u.basePrice * Math.pow(1.5, level));
+                list.innerHTML += `<div class="card"><div style="font-size:30px">${u.icon}</div><h3>${u.name}</h3><p style="font-size:12px">DARAJA: ${level}</p><button class="btn" id="up-btn-${i}" onclick="buyUp(${i}, ${cost}, ${u.power})" style="font-size:12px">${cost.toLocaleString()} 💰</button></div>`;
+            });
+        }
+        function buyUp(i, cost, p) {
+            const btn = document.getElementById(`up-btn-${i}`);
+            if(gameData.balance >= cost) { sounds.click.play(); gameData.balance -= cost; gameData.upgrades[i]++; gameData.pasiv += p; save(); renderUpgrades(); updateUI(); } else { sounds.error.play(); showError(btn, cost.toLocaleString() + " 💰"); }
+        }
+        function renderShop() {
+            const list = document.getElementById('shop-list');
+            list.innerHTML = '';
+            items.forEach(item => {
+                const isUnl = gameData.unlocked.includes(item.id);
+                const isActive = gameData.active === item.id;
+                list.innerHTML += `<div class="card ${isActive ? 'active' : ''}"><div style="font-size:40px">${item.icon}</div><h3>${item.name}</h3><p style="color:var(--green); font-size:12px; margin-bottom:10px;">FOYDA: +${item.reward.toLocaleString()} 💰</p><button class="btn" id="shop-btn-${item.id}" onclick="buyItem('${item.id}', ${item.price})" style="width:100%; font-size:12px;">${isActive ? 'SAYLANDI' : (isUnl ? 'SAYLOMOQTA' : item.price.toLocaleString() + ' 💰')}</button></div>`;
+            });
+        }
+        function buyItem(id, p) {
+            const btn = document.getElementById(`shop-btn-${id}`);
+            if(gameData.unlocked.includes(id)) { sounds.click.play(); gameData.active = id; save(); renderShop(); } else if(gameData.balance >= p) { sounds.win.play(); gameData.balance -= p; gameData.unlocked.push(id); gameData.active = id; save(); renderShop(); updateUI(); } else { sounds.error.play(); showError(btn, p.toLocaleString() + " 💰"); }
+        }
+        function showError(btn, originalText) { btn.classList.add('error-btn'); btn.innerText = "YETMAYDI ❌"; setTimeout(() => { btn.classList.remove('error-btn'); btn.innerText = originalText; }, 1000); }
+        function bidAuction() {
+            const status = document.getElementById('auc-status');
+            const btn = document.getElementById('auc-btn');
+            if (gameData.balance < 50000) { sounds.error.play(); showError(btn, "PUL TIKICH"); return; }
+            gameData.balance -= 50000; status.innerText = "🎲 YUMOLAMOQTA...";
+            setTimeout(() => { if (Math.random() < 0.4) { sounds.win.play(); gameData.balance += 100000; status.innerText = "🔥 YUTUQ! +100,000 💰"; status.style.color = "#10b981"; } else { sounds.error.play(); status.innerText = "💀 YUTQAZDINGIZ..."; status.style.color = "#ef4444"; } save(); updateUI(); }, 1000);
+        }
+        function openModal(id) { sounds.click.play(); document.getElementById(id).style.display = 'flex'; if(id==='upgrade-modal') renderUpgrades(); if(id==='shop-modal') renderShop(); }
+        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+        function closeResult() { document.getElementById('result-modal').style.display = 'none'; document.getElementById('main-menu').style.display = 'flex'; }
+        function claimDaily() { sounds.win.play(); gameData.balance += 40000; gameData.lastDaily = Date.now(); save(); updateUI(); alert("40,000 💰 alındı!"); }
+
+        var ZX_ACTIVE_KEY = "zxmax_active_profile_v1";
+        var ZX_LEGACY_SAVE = "zxmax_save_v1";
+        var ZX_SAVE_PREFIX = "zxmax_save_v1__";
+
+        function getZxKey() {
+            var id = localStorage.getItem(ZX_ACTIVE_KEY);
+            if (id && /^[a-z0-9]+$/i.test(id)) return ZX_SAVE_PREFIX + id;
+            return ZX_LEGACY_SAVE;
+        }
+
+        function defaultZx() {
+            return { coins: 0, totalEarned: 0, totalSpent: 0, purchases: {}, lastDaily: null, lastQuickEarn: 0, theme: "default" };
+        }
+
+        function loadZx() {
+            try {
+                var raw = localStorage.getItem(getZxKey());
+                if (!raw) return defaultZx();
+                var p = JSON.parse(raw);
+                return { ...defaultZx(), ...p, purchases: p.purchases || {} };
+            } catch(e) { return defaultZx(); }
+        }
+
+        function saveZx(zx) {
+            localStorage.setItem(getZxKey(), JSON.stringify(zx));
+        }
+
+        function transferToZxmax() {
+            var input = document.getElementById('transfer-amount');
+            var status = document.getElementById('transfer-status');
+            var amount = Math.floor(Number(input.value));
+            if (!isFinite(amount) || amount <= 0) { status.innerText = "1 yoki undan katta son kiriting."; status.style.color = "var(--red)"; return; }
+            if (gameData.balance < amount) { status.innerText = "Balans yetarli emas."; status.style.color = "var(--red)"; return; }
+            var zx = loadZx();
+            zx.coins = (Math.floor(Number(zx.coins)) || 0) + amount;
+            zx.totalEarned = (Math.floor(Number(zx.totalEarned)) || 0) + amount;
+            saveZx(zx);
+            gameData.balance -= amount;
+            save();
+            updateUI();
+            status.innerText = "+" + amount + " zxmax ga o'tkazildi!";
+            status.style.color = "var(--green)";
+            input.value = "";
+            sounds.win.play();
+        }
+
+        function openTransferModal() {
+            document.getElementById('transfer-modal').style.display = 'flex';
+            document.getElementById('transfer-bal').innerText = Math.floor(gameData.balance).toLocaleString();
+            document.getElementById('transfer-amount').value = "";
+            document.getElementById('transfer-status').innerText = "";
+            document.getElementById('transfer-btn').onclick = transferToZxmax;
+        }
+
+        const sc = document.getElementById('stars-container');
+        for(let i=0; i<80; i++) {
+            const s = document.createElement('div');
+            s.className = 'star';
+            s.style.width = s.style.height = Math.random()*3+'px';
+            s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
+            s.style.setProperty('--d', Math.random()*3+2+'s');
+            sc.appendChild(s);
+        }
+        window.onload = updateUI;
+        </script>
+</body>
+</html>

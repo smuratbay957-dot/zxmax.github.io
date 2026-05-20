@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz o'yini</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .container {
+    width: 100%;
+    max-width: 640px;
+    padding: 20px;
+  }
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 14px 22px;
+    margin-bottom: 24px;
+    border: 1px solid #2a2a4a;
+    box-shadow: 0 4px 24px rgba(0,0,0,.4);
+  }
+  .top-bar h1 {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .coin-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #252545;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 18px;
+    color: #ffd700;
+  }
+  .coin-display::before {
+    content: "🪙";
+    font-size: 20px;
+  }
+  .card {
+    background: #1a1a2e;
+    border-radius: 20px;
+    padding: 28px 24px;
+    border: 1px solid #2a2a4a;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    margin-bottom: 20px;
+  }
+  .question-text {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .question-number {
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 10px;
+  }
+  .options {
+    display: grid;
+    gap: 12px;
+  }
+  .option-btn {
+    background: #252545;
+    border: 2px solid #2a2a4a;
+    color: #e0e0e0;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: left;
+    position: relative;
+    touch-action: manipulation;
+  }
+  .option-btn:hover:not(.disabled) { background: #2e2e52; border-color: #3a3a6a; transform: translateY(-1px); }
+  .option-btn.correct { background: #1b5e20; border-color: #4caf50; color: #a5d6a7; }
+  .option-btn.wrong { background: #5e1b1b; border-color: #f44336; color: #ef9a9a; }
+  .option-btn.disabled { cursor: default; opacity: .7; }
+  .option-btn .letter { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; background: #3a3a5a; margin-right: 12px; font-weight: 700; font-size: 14px; }
+  .feedback { text-align: center; margin-top: 18px; font-size: 16px; min-height: 28px; }
+  .feedback.correct { color: #66bb6a; }
+  .feedback.wrong { color: #ef5350; }
+  .next-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin-top: 18px;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+    color: #1a1a2e;
+    touch-action: manipulation;
+  }
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,210,0,.3); }
+  .next-btn:disabled { opacity: .5; cursor: default; transform: none; box-shadow: none; }
+  .result-screen { text-align: center; }
+  .result-screen h2 { font-size: 28px; margin-bottom: 8px; }
+  .result-screen .big-coins { font-size: clamp(32px, 12vw, 52px); color: #ffd700; margin: 16px 0; }
+  .result-screen p { font-size: 16px; color: #aaa; margin-bottom: 6px; }
+  .btn-group { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .btn-group button { flex: 1; min-width: clamp(80px, 30vw, 120px); padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all .2s; touch-action: manipulation; }
+  .btn-restart { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+  .btn-restart:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(118,75,162,.4); }
+  .btn-transfer { background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a2e; }
+  .btn-transfer:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,210,0,.3); }
+  .hidden { display: none !important; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex;
+    justify-content: center; align-items: center; z-index: 1000;
+    animation: fadeIn .2s;
+  }
+  .modal {
+    background: #1a1a2e; border-radius: 20px; padding: 32px 28px;
+    max-width: 420px; width: 90%; border: 1px solid #2a2a4a;
+    box-shadow: 0 16px 48px rgba(0,0,0,.6);
+  }
+  .modal h3 { font-size: 22px; margin-bottom: 8px; }
+  .modal p { color: #aaa; margin-bottom: 16px; font-size: 14px; }
+  .modal-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2a2a4a; }
+  .modal-row:last-child { border-bottom: none; }
+  .modal-row .label { color: #888; }
+  .modal-row .value { font-weight: 700; color: #ffd700; }
+  .modal .confirm-btn {
+    width: 100%; padding: 14px; border: none; border-radius: 14px;
+    font-size: 17px; font-weight: 700; cursor: pointer; transition: all .2s;
+    background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a2e; margin-top: 18px; touch-action: manipulation;
+  }
+  .modal .confirm-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,210,0,.3); }
+  .modal .confirm-btn:disabled { opacity: .4; cursor: default; }
+  .modal .close-btn {
+    width: 100%; padding: 12px; border: 1px solid #3a3a5a; border-radius: 14px;
+    background: transparent; color: #aaa; font-size: 15px; cursor: pointer; margin-top: 8px; transition: all .2s; touch-action: manipulation;
+  }
+  .modal .close-btn:hover { background: #252545; color: #fff; }
+  .modal .success { color: #66bb6a; text-align: center; font-size: 15px; margin-top: 12px; }
+  .modal .error { color: #ef5350; text-align: center; font-size: 15px; margin-top: 12px; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .start-screen { text-align: center; }
+  .start-screen h2 { font-size: 32px; margin-bottom: 10px; background: linear-gradient(135deg, #f7971e, #ffd200); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .start-screen p { color: #aaa; font-size: 16px; margin-bottom: 24px; }
+  .start-btn {
+    padding: 16px 48px; border: none; border-radius: 16px;
+    font-size: 20px; font-weight: 700; cursor: pointer;
+    background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a2e;
+    transition: all .2s;
+    touch-action: manipulation;
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,210,0,.3); }
+
+  @media (max-width: 480px) {
+    .top-bar { padding: 10px 14px; }
+    .card { padding: 20px 16px; }
+    .modal { padding: 24px 18px; }
+  }
+  @media (max-width: 360px) {
+    .top-bar { padding: 8px 10px; }
+    .card { padding: 16px 12px; }
+    .modal { padding: 20px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+  <div class="top-bar">
+    <h1>🎯 Quiz</h1>
+    <div class="coin-display" id="coinDisplay">0</div>
+  </div>
+
+  <div id="startScreen" class="card start-screen">
+    <h2>Bilimingizni sinang!</h2>
+    <p>15 ta savol. Har bir to'g'ri javob uchun 10 tanga.</p>
+    <button class="start-btn" onclick="startGame()">Boshlash</button>
+  </div>
+
+  <div id="gameScreen" class="card hidden">
+    <div class="question-number" id="questionNum">1 / 15</div>
+    <div class="question-text" id="questionText"></div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Keyingi savol</button>
+  </div>
+
+  <div id="resultScreen" class="card result-screen hidden">
+    <h2>🎉 O'yin tugadi!</h2>
+    <div class="big-coins" id="resultCoins">0</div>
+    <p id="resultText"></p>
+    <div class="btn-group">
+      <button class="btn-restart" onclick="startGame()">Qayta boshlash</button>
+      <button class="btn-transfer" onclick="openTransferModal()">zxmax ga o'tkazish</button>
+    </div>
+  </div>
+<a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;margin-top:20px;padding:8px;border-radius:8px;background:rgba(0,0,0,0.15)">← zxmax ga qaytish</a></div>
+
+<div id="transferModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>💸 zxmax ga o'tkazish</h3>
+    <p>Quiz tangalarini zxmax hisobingizga o'tkazing.</p>
+    <div class="modal-row"><span class="label">Quiz balansingiz</span><span class="value" id="modalQuizBalance">0</span></div>
+    <div class="modal-row"><span class="label">zxmax balansi (joriy)</span><span class="value" id="modalZxmaxBalance">0</span></div>
+    <div class="modal-row"><span class="label">O'tkaziladigan</span><span class="value" id="modalTransferAmount">0</span></div>
+    <div class="modal-row"><span class="label">Yangi zxmax balansi</span><span class="value" id="modalNewZxmaxBalance">0</span></div>
+    <button type="button" id="transferAllBtn" style="width:100%;padding:10px;border:1px solid #3a3a5a;border-radius:12px;background:transparent;color:#ffd700;font-size:14px;cursor:pointer;margin:8px 0;touch-action:manipulation" onclick="document.getElementById('confirmTransferBtn').click();return false">Hammasini o'tkazish</button>
+    <button class="confirm-btn" id="confirmTransferBtn" onclick="confirmTransfer()">✅ zxmax ga o'tkazish</button>
+    <div id="transferStatus"></div>
+    <button class="close-btn" onclick="closeTransferModal()">Yopish</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    question: "Yerning sun'iy yo'ldoshi qanday ataladi?",
+    options: ["Quyosh", "Mars", "Oy", "Venera"],
+    correct: 2
+  },
+  {
+    question: "O'zbekiston poytaxti qayer?",
+    options: ["Samarqand", "Buxoro", "Toshkent", "Namangan"],
+    correct: 2
+  },
+  {
+    question: "Eng katta okean qaysi?",
+    options: ["Atlantika", "Tinch", "Hind", "Shimoliy Muz"],
+    correct: 1
+  },
+  {
+    question: "Suvning kimyoviy formulasi qanday?",
+    options: ["CO2", "H2O", "NaCl", "O2"],
+    correct: 1
+  },
+  {
+    question: "Odam tanasidagi eng katta organ qaysi?",
+    options: ["Jigar", "Yurak", "Teri", "Miya"],
+    correct: 2
+  },
+  {
+    question: "Qaysi sayyora 'Qizil sayyora' deb ataladi?",
+    options: ["Venera", "Mars", "Yupiter", "Saturn"],
+    correct: 1
+  },
+  {
+    question: "Amazon daryosi qaysi qit'ada joylashgan?",
+    options: ["Afrika", "Osiyo", "Janubiy Amerika", "Avstraliya"],
+    correct: 2
+  },
+  {
+    question: "Fotosintez jarayonida o'simliklar qanday gaz chiqaradi?",
+    options: ["Karbonat angidrid", "Kislorod", "Azot", "Vodorod"],
+    correct: 1
+  },
+  {
+    question: "Eng baland tog' cho'qqisi qaysi?",
+    options: ["Kilimanjaro", "Everest", "Elbrus", "Akonkagua"],
+    correct: 1
+  },
+  {
+    question: "O'zbekistonning eng katta ko'li qaysi?",
+    options: ["Orol dengizi", "Aydar ko'li", "Sarez ko'li", "Tuzkon"],
+    correct: 0
+  },
+  {
+    question: "Qonni yurakdan tanaga haydovchi qon tomirlar qanday ataladi?",
+    options: ["Vena", "Arteriya", "Kapillyar", "Limfa"],
+    correct: 1
+  },
+  {
+    question: "Qaysi element eng yengil gaz?",
+    options: ["Kislorod", "Azot", "Vodorod", "Geliy"],
+    correct: 2
+  },
+  {
+    question: "Buyuk Ipak Yo'li orqali tarqalgan asosiy mahsulot?",
+    options: ["Paxta", "Ipak", "Bug'doy", "Choy"],
+    correct: 1
+  },
+  {
+    question: "Dunyodagi eng katta davlat qaysi?",
+    options: ["AQSh", "Kanada", "Xitoy", "Rossiya"],
+    correct: 3
+  },
+  {
+    question: "Inson miyasi taxminan necha gramm?",
+    options: ["500 g", "800 g", "1000 g", "1400 g"],
+    correct: 3
+  }
+];
+
+const LETTERS = ["A", "B", "C", "D"];
+let state = {
+  currentIndex: 0,
+  correctCount: 0,
+  answered: false,
+  coins: 0,
+  questions: []
+};
+
+function getCoins() {
+  return parseInt(localStorage.getItem("quiz_coins") || "0", 10);
+}
+
+function setCoins(val) {
+  localStorage.setItem("quiz_coins", String(val));
+}
+
+function updateCoinDisplay() {
+  state.coins = getCoins();
+  document.getElementById("coinDisplay").textContent = state.coins;
+}
+
+function startGame() {
+  state.currentIndex = 0;
+  state.correctCount = 0;
+  state.answered = false;
+  state.questions = QUESTIONS.map(q => ({ ...q, shuffled: shuffleOptions(q) }));
+
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("resultScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+
+  showQuestion();
+}
+
+function shuffleOptions(q) {
+  const indices = [0, 1, 2, 3];
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return {
+    options: indices.map(i => q.options[i]),
+    correct: indices.indexOf(q.correct)
+  };
+}
+
+function showQuestion() {
+  const q = state.questions[state.currentIndex];
+  document.getElementById("questionNum").textContent = `${state.currentIndex + 1} / ${state.questions.length}`;
+  document.getElementById("questionText").textContent = q.question;
+
+  const container = document.getElementById("optionsContainer");
+  container.innerHTML = "";
+
+  q.shuffled.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.innerHTML = `<span class="letter">${LETTERS[i]}</span>${opt}`;
+    btn.dataset.index = i;
+    btn.addEventListener("click", () => selectAnswer(i));
+    container.appendChild(btn);
+  });
+
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("feedback").className = "feedback";
+  document.getElementById("nextBtn").disabled = true;
+  state.answered = false;
+}
+
+function selectAnswer(idx) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const q = state.questions[state.currentIndex];
+  const btns = document.querySelectorAll(".option-btn");
+
+  btns.forEach((btn, i) => {
+    btn.classList.add("disabled");
+    if (i === q.shuffled.correct) btn.classList.add("correct");
+    if (i === idx && idx !== q.shuffled.correct) btn.classList.add("wrong");
+  });
+
+  const feedback = document.getElementById("feedback");
+  if (idx === q.shuffled.correct) {
+    state.correctCount++;
+    const coins = getCoins() + 10;
+    setCoins(coins);
+    updateCoinDisplay();
+    feedback.textContent = "✅ To'g'ri! +10 tanga";
+    feedback.className = "feedback correct";
+  } else {
+    feedback.textContent = "❌ Noto'g'ri!";
+    feedback.className = "feedback wrong";
+  }
+
+  document.getElementById("nextBtn").disabled = false;
+}
+
+function nextQuestion() {
+  state.currentIndex++;
+  if (state.currentIndex >= state.questions.length) {
+    showResult();
+  } else {
+    showQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById("gameScreen").classList.add("hidden");
+  document.getElementById("resultScreen").classList.remove("hidden");
+
+  document.getElementById("resultCoins").textContent = `${state.correctCount * 10} 🪙`;
+  document.getElementById("resultText").textContent =
+    `${state.correctCount} / ${state.questions.length} ta to'g'ri javob. Jami ${state.coins} tanga.`;
+  updateCoinDisplay();
+}
+
+function getZxmaxProfileId() {
+  try {
+    const raw = localStorage.getItem("zxmax_active_profile_v1");
+    if (raw) return raw;
+  } catch (_) {}
+  return null;
+}
+
+function getZxmaxState() {
+  const profileId = getZxmaxProfileId();
+  let key = profileId ? `zxmax_save_v1__${profileId}` : null;
+  let raw = key ? localStorage.getItem(key) : null;
+  if (!raw) raw = localStorage.getItem("zxmax_save_v1");
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (_) { return null; }
+}
+
+function saveZxmaxState(stateObj) {
+  const profileId = getZxmaxProfileId();
+  let key = profileId ? `zxmax_save_v1__${profileId}` : null;
+  if (!key || !localStorage.getItem(key)) key = "zxmax_save_v1";
+  localStorage.setItem(key, JSON.stringify(stateObj));
+}
+
+function openTransferModal() {
+  updateCoinDisplay();
+  const quizBal = state.coins;
+  if (quizBal <= 0) {
+    document.getElementById("transferStatus").innerHTML = '<span class="error">O'tkazish uchun tanga mavjud emas.</span>';
+  } else {
+    document.getElementById("transferStatus").innerHTML = "";
+  }
+
+  const zxState = getZxmaxState();
+  const zxBal = zxState?.coins ?? 0;
+
+  document.getElementById("modalQuizBalance").textContent = quizBal;
+  document.getElementById("modalZxmaxBalance").textContent = zxBal;
+  document.getElementById("modalTransferAmount").textContent = quizBal;
+  document.getElementById("modalNewZxmaxBalance").textContent = zxBal + quizBal;
+  document.getElementById("confirmTransferBtn").disabled = quizBal <= 0;
+  document.getElementById("transferModal").classList.remove("hidden");
+}
+
+function closeTransferModal() {
+  document.getElementById("transferModal").classList.add("hidden");
+  document.getElementById("transferStatus").innerHTML = "";
+}
+
+function confirmTransfer() {
+  const quizBal = getCoins();
+  if (quizBal <= 0) {
+    document.getElementById("transferStatus").innerHTML = '<span class="error">Tanga yetarli emas.</span>';
+    return;
+  }
+
+  let zxState = getZxmaxState();
+  if (!zxState) {
+    zxState = { coins: 0, totalEarned: 0, totalSpent: 0, purchases: [], lastDaily: null, lastQuickEarn: null, theme: "dark" };
+  }
+
+  zxState.coins = (zxState.coins || 0) + quizBal;
+  zxState.totalEarned = (zxState.totalEarned || 0) + quizBal;
+
+  saveZxmaxState(zxState);
+  setCoins(0);
+  updateCoinDisplay();
+
+  document.getElementById("modalQuizBalance").textContent = "0";
+  document.getElementById("modalZxmaxBalance").textContent = zxState.coins;
+  document.getElementById("modalTransferAmount").textContent = quizBal;
+  document.getElementById("modalNewZxmaxBalance").textContent = zxState.coins;
+  document.getElementById("confirmTransferBtn").disabled = true;
+  document.getElementById("transferStatus").innerHTML =
+    `<span class="success">✅ ${quizBal} tanga muvaffaqiyatli o'tkazildi!</span>`;
+
+  if (!document.getElementById("resultScreen").classList.contains("hidden")) {
+    document.getElementById("resultCoins").textContent = "0 🪙";
+    document.getElementById("resultText").textContent = "Barcha tangalar zxmax ga o'tkazildi.";
+  }
+}
+
+updateCoinDisplay();
+</script>
+</body>
+</html>

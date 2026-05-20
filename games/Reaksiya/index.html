@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reaksiya Test</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0d0d;color:#e0e0e0;min-height:100vh;display:flex;justify-content:center;align-items:center;overflow:hidden}
+#app{width:100%;max-width:480px;padding:16px;text-align:center;position:relative;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+h1{font-size:28px;font-weight:700;background:linear-gradient(135deg,#ff416c,#ff4b2b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.top-bar{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;font-size:14px;z-index:10}
+.coin-display{background:#1a1a2e;border:1px solid #ffd700;border-radius:20px;padding:6px 16px;color:#ffd700;font-weight:600;display:flex;align-items:center;gap:6px}
+.coin-display::before{content:"\2B50"}
+#round-info{background:#1a1a2e;border-radius:20px;padding:6px 16px;color:#aaa}
+.hidden{display:none!important}
+.area-wrap{width:100%;aspect-ratio:1;max-width:min(400px,90vw);margin:16px auto;border-radius:24px;overflow:hidden;position:relative;box-shadow:0 0 40px rgba(255,65,108,0.15)}
+#game-area{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;transition:background 0.15s;user-select:none;position:relative;touch-action:manipulation}
+#game-area.state-waiting{background:linear-gradient(145deg,#2d1b1b,#4a1a1a)}
+#game-area.state-ready{background:linear-gradient(145deg,#1b3a1b,#1a5a1a)}
+#game-area.state-cliked{background:linear-gradient(145deg,#1a1a3a,#2a1a4a)}
+#game-area.state-finished{background:linear-gradient(145deg,#1a1a1a,#2a2a2a)}
+#status-text{font-size:28px;font-weight:700;margin-bottom:8px;text-shadow:0 0 20px rgba(255,255,255,0.1)}
+#status-sub{font-size:16px;color:rgba(255,255,255,0.6)}
+.state-waiting #status-text{color:#ff6b6b}
+.state-ready #status-text{color:#51cf66}
+.state-cliked #status-text{color:#748ffc}
+.state-waiting #status-sub{color:rgba(255,107,107,0.6)}
+.state-ready #status-sub{color:rgba(81,207,102,0.6)}
+.state-waiting #status-sub::after{content:" \2022";animation:dotPulse 1s infinite}
+@keyframes dotPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+#reaction-time{font-size:48px;font-weight:700;color:#e0e0e0;margin-top:8px;text-shadow:0 0 30px rgba(255,255,255,0.05)}
+#next-round-btn{background:linear-gradient(135deg,#ff416c,#ff4b2b);border:none;color:#fff;padding:12px 40px;border-radius:30px;font-size:18px;font-weight:600;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 4px 20px rgba(255,65,108,0.3);margin-top:16px;touch-action:manipulation}
+#next-round-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(255,65,108,0.5)}
+#next-round-btn:active{transform:scale(0.97)}
+button{font-family:inherit}
+#instructions-screen,#game-screen,#results-screen{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#instructions-screen{text-align:left}
+#instructions-screen h2{font-size:22px;margin-bottom:16px;background:linear-gradient(135deg,#ff416c,#ff4b2b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#instructions-screen ul{list-style:none;padding:0;margin:0 0 24px 0}
+#instructions-screen ul li{padding:8px 0;padding-left:28px;position:relative;color:#ccc;font-size:15px;line-height:1.5}
+#instructions-screen ul li::before{content:"";position:absolute;left:0;top:10px;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#ff416c,#ff4b2b);opacity:0.6}
+#start-btn{background:linear-gradient(135deg,#ff416c,#ff4b2b);border:none;color:#fff;padding:14px 60px;border-radius:30px;font-size:20px;font-weight:600;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 4px 20px rgba(255,65,108,0.3);display:block;margin:0 auto;touch-action:manipulation}
+#start-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(255,65,108,0.5)}
+#start-btn:active{transform:scale(0.97)}
+#transfer-btn{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:transform 0.15s;display:flex;align-items:center;gap:4px;touch-action:manipulation}
+#transfer-btn:hover{transform:scale(1.05)}
+#transfer-btn::before{content:"\2192"}
+#results-list{width:100%;max-width:360px;margin:12px 0 20px}
+.result-row{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #222;font-size:14px}
+.result-row:nth-child(odd){background:rgba(255,255,255,0.02)}
+.result-row .rnum{color:#888;min-width:30px}
+.result-row .rtime{font-weight:600;color:#ddd}
+.result-row .rcoins{color:#ffd700}
+#total-score{font-size:32px;font-weight:700;background:linear-gradient(135deg,#ffd700,#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:8px 0}
+#play-again-btn{background:linear-gradient(135deg,#ff416c,#ff4b2b);border:none;color:#fff;padding:12px 50px;border-radius:30px;font-size:18px;font-weight:600;cursor:pointer;transition:transform 0.15s;box-shadow:0 4px 20px rgba(255,65,108,0.3);margin-top:8px;touch-action:manipulation}
+#play-again-btn:hover{transform:scale(1.05)}
+#results-screen h2{font-size:22px;margin-bottom:12px;background:linear-gradient(135deg,#ff416c,#ff4b2b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.transfer-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:1000}
+.transfer-modal{background:#1a1a2e;border:1px solid #333;border-radius:20px;padding:28px;width:90%;max-width:380px;text-align:center}
+.transfer-modal h3{font-size:20px;margin-bottom:16px;color:#e0e0e0}
+.transfer-modal .info-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #2a2a3e}
+.transfer-modal .info-row span:first-child{color:#888}
+.transfer-modal .info-row span:last-child{color:#e0e0e0;font-weight:600}
+.transfer-modal input{width:100%;padding:12px 16px;border-radius:12px;border:1px solid #333;background:#0d0d1a;color:#e0e0e0;font-size:18px;text-align:center;margin:16px 0;outline:none;transition:border 0.2s}
+.transfer-modal input:focus{border-color:#667eea}
+.transfer-modal .btn-row{display:flex;gap:12px;justify-content:center}
+.transfer-modal .btn-row button{padding:10px 28px;border-radius:20px;border:none;font-size:15px;font-weight:600;cursor:pointer;transition:transform 0.15s;touch-action:manipulation}
+.transfer-modal .btn-row button:hover{transform:scale(1.04)}
+#transfer-confirm-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+#transfer-cancel-btn{background:#2a2a3e;color:#999}
+.transfer-msg{font-size:13px;margin-top:12px;min-height:20px}
+.transfer-msg.ok{color:#51cf66}
+.transfer-msg.err{color:#ff6b6b}
+@media(max-width:480px){.top-bar{top:8px;left:8px;right:8px;font-size:12px}#status-text{font-size:clamp(18px,6vw,28px)}.transfer-modal{padding:20px}.result-row{padding:6px 10px;font-size:12px}}
+@media(max-width:360px){.top-bar{gap:4px}}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <div class="top-bar">
+    <div id="round-info">0 / 10</div>
+    <div class="coin-display" id="coin-display">0</div>
+    <button id="transfer-btn">zxmax ga</button>
+  </div>
+
+  <!-- Instructions -->
+  <div id="instructions-screen">
+    <h1>Reaksiya Test</h1>
+    <h2>Qanday o'ynaladi?</h2>
+    <ul>
+      <li>Ekrandagi rangli maydon kutilmagan vaqtda rangini o'zgartiradi</li>
+      <li>Rang o'zgarishi bilan imkon qadar tez bosing!</li>
+      <li>Har bir urinishda reaksiya tezligingizga qarab tanga olasiz</li>
+      <li>Jami 10 ta urinish</li>
+    </ul>
+    <ul style="margin-top:-8px">
+      <li>&lt; 200ms &rarr; +15 tanga</li>
+      <li>200-350ms &rarr; +10 tanga</li>
+      <li>350-500ms &rarr; +5 tanga</li>
+      <li>&gt; 500ms &rarr; +2 tanga</li>
+    </ul>
+    <button id="start-btn">Boshlash</button>
+  </div>
+
+  <!-- Game -->
+  <div id="game-screen" class="hidden">
+    <div class="area-wrap">
+      <div id="game-area" class="state-waiting">
+        <div id="status-text">Kutilmoqda</div>
+        <div id="status-sub">Rang o'zgarishini kuting</div>
+        <div id="reaction-time" class="hidden"></div>
+      </div>
+    </div>
+    <button id="next-round-btn" class="hidden">Keyingi urinish</button>
+  </div>
+
+  <!-- Results -->
+  <div id="results-screen" class="hidden">
+    <h1>Reaksiya Test</h1>
+    <h2>Natijalar</h2>
+    <div id="results-list"></div>
+    <div id="total-score"></div>
+    <button id="play-again-btn">Qayta o'ynash</button>
+  </div>
+
+  <a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.3);font-size:12px;text-decoration:none;margin-top:12px;padding:6px;border-radius:6px;background:rgba(0,0,0,0.15)">← zxmax ga qaytish</a>
+
+</div>
+
+<script>
+(function(){
+  const COINS_KEY = 'reaksiya_coins';
+  const ROUNDS = 10;
+
+  let coins = parseInt(localStorage.getItem(COINS_KEY)) || 0;
+  let round = 0;
+  let results = [];
+  let state = 'idle'; // idle, waiting, ready, clicked, roundEnd, finished
+  let waitTimer = null;
+  let reactionStart = 0;
+  let locked = false;
+
+  const els = {
+    instr: document.getElementById('instructions-screen'),
+    game: document.getElementById('game-screen'),
+    results: document.getElementById('results-screen'),
+    roundInfo: document.getElementById('round-info'),
+    coinDisplay: document.getElementById('coin-display'),
+    gameArea: document.getElementById('game-area'),
+    statusText: document.getElementById('status-text'),
+    statusSub: document.getElementById('status-sub'),
+    reactionTime: document.getElementById('reaction-time'),
+    nextBtn: document.getElementById('next-round-btn'),
+    startBtn: document.getElementById('start-btn'),
+    playAgain: document.getElementById('play-again-btn'),
+    resultsList: document.getElementById('results-list'),
+    totalScore: document.getElementById('total-score'),
+    transferBtn: document.getElementById('transfer-btn'),
+  };
+
+  function updateCoins(amount) {
+    coins += amount;
+    localStorage.setItem(COINS_KEY, coins);
+    renderCoins();
+  }
+
+  function renderCoins() {
+    els.coinDisplay.textContent = coins;
+  }
+
+  function showScreen(screen) {
+    [els.instr, els.game, els.results].forEach(s => s.classList.add('hidden'));
+    screen.classList.remove('hidden');
+  }
+
+  function setGameState(newState) {
+    state = newState;
+    els.gameArea.className = 'state-' + newState;
+  }
+
+  function resetRoundUI() {
+    els.reactionTime.classList.add('hidden');
+    els.reactionTime.textContent = '';
+    els.nextBtn.classList.add('hidden');
+    els.statusSub.classList.remove('hidden');
+  }
+
+  function startRound() {
+    if (round >= ROUNDS) {
+      endGame();
+      return;
+    }
+    round++;
+    els.roundInfo.textContent = round + ' / ' + ROUNDS;
+    setGameState('waiting');
+    els.statusText.textContent = 'Kutilmoqda';
+    els.statusSub.textContent = 'Rang o\'zgarishini kuting';
+    resetRoundUI();
+    locked = false;
+
+    const delay = 1000 + Math.random() * 4000;
+    waitTimer = setTimeout(() => {
+      if (state !== 'waiting') return;
+      setGameState('ready');
+      els.statusText.textContent = 'BOSING!';
+      els.statusSub.textContent = 'Hoziroq bosing!';
+      reactionStart = performance.now();
+    }, delay);
+  }
+
+  function handleAreaClick() {
+    if (locked) return;
+    if (state === 'ready') {
+      locked = true;
+      const elapsed = Math.round(performance.now() - reactionStart);
+      setGameState('cliked');
+      els.reactionTime.classList.remove('hidden');
+      els.reactionTime.textContent = elapsed + ' ms';
+      els.statusText.textContent = 'BOSILDI!';
+      els.statusSub.classList.add('hidden');
+
+      let earned = 2;
+      if (elapsed < 200) earned = 15;
+      else if (elapsed <= 350) earned = 10;
+      else if (elapsed <= 500) earned = 5;
+
+      results.push({ round, time: elapsed, coins: earned });
+      updateCoins(earned);
+
+      els.nextBtn.classList.remove('hidden');
+      els.nextBtn.textContent = round >= ROUNDS ? 'Natijalarni ko\'rish' : 'Keyingi urinish';
+      return;
+    }
+    if (state === 'waiting') {
+      locked = true;
+      clearTimeout(waitTimer);
+      setGameState('cliked');
+      els.reactionTime.classList.remove('hidden');
+      els.reactionTime.textContent = '0 ms';
+      els.statusText.textContent = 'BARVAQT!';
+      els.statusSub.textContent = 'Rang o\'zgarishini kutmadingiz';
+      results.push({ round, time: 0, coins: 0 });
+      els.nextBtn.classList.remove('hidden');
+      els.nextBtn.textContent = round >= ROUNDS ? 'Natijalarni ko\'rish' : 'Keyingi urinish';
+    }
+  }
+
+  function nextRound() {
+    if (round >= ROUNDS) {
+      endGame();
+    } else {
+      startRound();
+    }
+  }
+
+  function endGame() {
+    setGameState('finished');
+    els.statusText.textContent = 'Tugadi!';
+    els.statusSub.textContent = 'Natijalarni ko\'ring';
+    els.reactionTime.classList.add('hidden');
+    els.nextBtn.classList.add('hidden');
+    showScreen(els.results);
+    renderResults();
+  }
+
+  function renderResults() {
+    let totalCoins = 0;
+    let html = '';
+    results.forEach(r => {
+      totalCoins += r.coins;
+      const timeStr = r.time === 0 ? 'ERTA' : r.time + ' ms';
+      const coinStr = r.coins > 0 ? '+' + r.coins : '0';
+      html += '<div class="result-row"><span class="rnum">#' + r.round + '</span><span class="rtime">' + timeStr + '</span><span class="rcoins">' + coinStr + '</span></div>';
+    });
+    els.resultsList.innerHTML = html;
+    els.totalScore.textContent = '+' + totalCoins;
+  }
+
+  function startGame() {
+    round = 0;
+    results = [];
+    showScreen(els.game);
+    startRound();
+  }
+
+  function resetToMenu() {
+    clearTimeout(waitTimer);
+    state = 'idle';
+    showScreen(els.instr);
+  }
+
+  // zxmax transfer
+  function getZxmaxState() {
+    const activeProfile = localStorage.getItem('zxmax_active_profile_v1');
+    let saveKey;
+    let raw;
+    if (activeProfile) {
+      saveKey = 'zxmax_save_v1__' + activeProfile;
+      raw = localStorage.getItem(saveKey);
+    }
+    if (!raw) {
+      saveKey = 'zxmax_save_v1';
+      raw = localStorage.getItem(saveKey);
+    }
+    return { key: saveKey, data: raw ? JSON.parse(raw) : null };
+  }
+
+  function saveZxmaxState(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  function getDefaultZxmaxState() {
+    return { coins: 0, totalEarned: 0, totalSpent: 0, purchases: {}, lastDaily: null, lastQuickEarn: 0, theme: 'default' };
+  }
+
+  function openTransferModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'transfer-modal-overlay';
+    overlay.innerHTML =
+      '<div class="transfer-modal">' +
+        '<h3>zxmax ga o\'tkazish</h3>' +
+        '<div class="info-row"><span>Hisobingiz</span><span id="tx-my-balance">' + coins + '</span></div>' +
+        '<div class="info-row"><span>zxmax balansi</span><span id="tx-zx-balance">0</span></div>' +
+        '<input type="number" id="tx-amount" min="1" placeholder="Miqdor" value="' + coins + '">' +
+        '<button type="button" id="tx-all-btn" style="width:100%;padding:8px;border-radius:12px;border:1px solid #667eea;background:transparent;color:#667eea;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;touch-action:manipulation">Hammasini o\'tkazish</button>' +
+        '<div class="btn-row">' +
+          '<button id="transfer-confirm-btn">O\'tkazish</button>' +
+          '<button id="transfer-cancel-btn">Bekor qilish</button>' +
+        '</div>' +
+        '<div class="transfer-msg" id="tx-msg"></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    // Show zx balance
+    const zx = getZxmaxState();
+    const zxState = zx.data || getDefaultZxmaxState();
+    document.getElementById('tx-zx-balance').textContent = zxState.coins;
+
+    function closeModal() {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }
+
+    document.getElementById('transfer-cancel-btn').addEventListener('click', closeModal);
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeModal();
+    });
+
+    document.getElementById('transfer-confirm-btn').addEventListener('click', function() {
+      const amountInput = document.getElementById('tx-amount');
+      const amount = parseInt(amountInput.value);
+      const msgEl = document.getElementById('tx-msg');
+      msgEl.className = 'transfer-msg';
+
+      if (!amount || amount <= 0) {
+        msgEl.textContent = 'Iltimos, to\'g\'ri miqdor kiriting';
+        msgEl.classList.add('err');
+        return;
+      }
+      if (amount > coins) {
+        msgEl.textContent = 'Hisobingizda yetarli tanga yo\'q';
+        msgEl.classList.add('err');
+        return;
+      }
+
+      // Deduct from reaksiya_coins
+      coins -= amount;
+      localStorage.setItem(COINS_KEY, coins);
+      renderCoins();
+
+      // Add to zxmax
+      const zx2 = getZxmaxState();
+      let zxData = zx2.data || getDefaultZxmaxState();
+      zxData.coins = (zxData.coins || 0) + amount;
+      zxData.totalEarned = (zxData.totalEarned || 0) + amount;
+      saveZxmaxState(zx2.key, zxData);
+
+      msgEl.textContent = amount + ' tanga muvaffaqiyatli o\'tkazildi!';
+      msgEl.classList.add('ok');
+      document.getElementById('tx-my-balance').textContent = coins;
+      document.getElementById('tx-zx-balance').textContent = zxData.coins;
+      document.getElementById('tx-amount').value = coins;
+
+      setTimeout(closeModal, 1200);
+    });
+
+    setTimeout(function(){
+      var allBtn = document.getElementById('tx-all-btn');
+      if(allBtn) allBtn.addEventListener('click', function(){
+        var amt = document.getElementById('tx-my-balance');
+        if(amt) document.getElementById('tx-amount').value = parseInt(amt.textContent) || 0;
+      });
+    }, 50);
+  }
+
+  // Event listeners
+  els.startBtn.addEventListener('click', startGame);
+  els.playAgain.addEventListener('click', resetToMenu);
+  els.gameArea.addEventListener('click', handleAreaClick);
+  els.nextBtn.addEventListener('click', nextRound);
+  els.transferBtn.addEventListener('click', openTransferModal);
+
+  renderCoins();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic-Tac-Toe</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  background: #0f0f0f;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.container {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 30px;
+  width: 420px;
+  max-width: 95vw;
+  box-shadow: 0 0 40px rgba(100, 100, 255, 0.15);
+  text-align: center;
+}
+h1 {
+  font-size: 28px;
+  background: linear-gradient(135deg, #00d2ff, #7b2ff7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+.stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.stat-card {
+  background: #16213e;
+  border-radius: 10px;
+  padding: 10px 14px;
+  flex: 1;
+  min-width: 0;
+}
+.stat-card .label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.stat-card .value {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.stat-card.coins .value { color: #f7d44a; }
+.stat-card.wins .value { color: #4caf50; }
+.stat-card.losses .value { color: #f44336; }
+.stat-card.draws .value { color: #ff9800; }
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 16px 0;
+  aspect-ratio: 1;
+  background: #0f3460;
+  border-radius: 12px;
+  padding: 6px;
+}
+.cell {
+  background: #1a1a2e;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(24px, 10vw, 44px);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  aspect-ratio: 1;
+  user-select: none;
+  touch-action: manipulation;
+}
+.cell:hover:not(.taken):not(.disabled) {
+  background: #273a5a;
+}
+.cell.taken, .cell.disabled {
+  cursor: default;
+}
+.cell.win-highlight {
+  background: #1b5e20;
+  animation: pulse 0.6s ease-in-out 3;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.status {
+  font-size: 16px;
+  margin: 12px 0;
+  min-height: 26px;
+  font-weight: 600;
+}
+.buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn {
+  background: #0f3460;
+  border: none;
+  color: #e0e0e0;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 44px;
+  min-width: 44px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn:hover {
+  background: #1a5276;
+  transform: scale(1.02);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn-primary {
+  background: linear-gradient(135deg, #00d2ff, #7b2ff7);
+  color: #fff;
+}
+.btn-primary:hover {
+  filter: brightness(1.15);
+}
+.btn-danger {
+  background: #7b2f2f;
+}
+.btn-danger:hover {
+  background: #993d3d;
+}
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 20px;
+  width: min(90vw, 380px);
+  max-width: none;
+  box-shadow: 0 0 60px rgba(100,100,255,0.3);
+  text-align: center;
+}
+.modal h2 {
+  margin-bottom: 8px;
+  font-size: 22px;
+}
+.modal p {
+  color: #aaa;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.modal .amount {
+  font-size: 36px;
+  font-weight: 700;
+  color: #f7d44a;
+  margin: 10px 0;
+}
+.modal .btn-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.modal .btn-group .btn {
+  flex: 1;
+}
+input[type="number"] {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #0f0f0f;
+  color: #e0e0e0;
+  font-size: 16px;
+  outline: none;
+  text-align: center;
+  margin: 6px 0;
+}
+input[type="number"]:focus {
+  border-color: #7b2ff7;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  z-index: 1000;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+@media (max-width: 480px) {
+  .container { padding: 16px; }
+  .stats { gap: 6px; }
+  .stat-card { padding: 6px 8px; }
+  .stat-card .value { font-size: 16px; }
+  .stat-card .label { font-size: 9px; }
+}
+@media (max-width: 360px) {
+  .stats { flex-wrap: wrap; }
+  .stat-card { flex: 0 0 calc(50% - 6px); }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>✕ Tic-Tac-Toe ○</h1>
+
+  <div class="stats">
+    <div class="stat-card coins">
+      <div class="label">Tangalar</div>
+      <div class="value" id="coinDisplay">0</div>
+    </div>
+    <div class="stat-card wins">
+      <div class="label">G'alaba</div>
+      <div class="value" id="winDisplay">0</div>
+    </div>
+    <div class="stat-card losses">
+      <div class="label">Mag'lubiyat</div>
+      <div class="value" id="lossDisplay">0</div>
+    </div>
+    <div class="stat-card draws">
+      <div class="label">Durang</div>
+      <div class="value" id="drawDisplay">0</div>
+    </div>
+  </div>
+
+  <div class="board" id="board">
+    <div class="cell" data-idx="0"></div>
+    <div class="cell" data-idx="1"></div>
+    <div class="cell" data-idx="2"></div>
+    <div class="cell" data-idx="3"></div>
+    <div class="cell" data-idx="4"></div>
+    <div class="cell" data-idx="5"></div>
+    <div class="cell" data-idx="6"></div>
+    <div class="cell" data-idx="7"></div>
+    <div class="cell" data-idx="8"></div>
+  </div>
+
+  <div class="status" id="status">Sizning navbatingiz (X)</div>
+
+  <div class="buttons">
+    <button class="btn btn-primary" id="resetBtn">♻ Yangi o'yin</button>
+    <button class="btn btn-danger" id="zxmaxBtn">⟳ zxmax ga o'tkazish</button>
+  </div>
+  <a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;margin-top:16px;padding:8px;border-radius:8px;background:rgba(0,0,0,0.15)">← zxmax ga qaytish</a>
+</div>
+
+<div class="modal-overlay" id="zxmaxModal">
+  <div class="modal">
+    <h2>⟳ zxmax ga o'tkazish</h2>
+    <p>Tangalarni zxmax hisobingizga o'tkazing</p>
+    <div class="amount" id="modalCoinBalance">0</div>
+    <p style="color:#888;font-size:13px;margin:0 0 4px">Mavjud tangalar</p>
+    <input type="number" id="transferAmount" min="1" placeholder="Miqdorni kiriting">
+    <button type="button" id="transferAllBtn" onclick="document.getElementById('transferAmount').value=document.getElementById('modalCoinBalance').textContent" style="width:100%;padding:10px;border:1px solid #7b2ff7;border-radius:8px;background:transparent;color:#7b2ff7;font-size:14px;font-weight:600;cursor:pointer;margin:4px 0;touch-action:manipulation">Hammasini o'tkazish</button>
+    <div class="btn-group">
+      <button class="btn" id="cancelTransfer">Bekor qilish</button>
+      <button class="btn btn-primary" id="confirmTransfer">O'tkazish</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  const BOARD_SIZE = 9;
+  let board = Array(BOARD_SIZE).fill(null);
+  let currentPlayer = 'X';
+  let gameOver = false;
+  let aiThinking = false;
+  let winCells = [];
+
+  const cellEls = document.querySelectorAll('.cell');
+  const statusEl = document.getElementById('status');
+  const coinDisplay = document.getElementById('coinDisplay');
+  const winDisplay = document.getElementById('winDisplay');
+  const lossDisplay = document.getElementById('lossDisplay');
+  const drawDisplay = document.getElementById('drawDisplay');
+  const resetBtn = document.getElementById('resetBtn');
+  const zxmaxBtn = document.getElementById('zxmaxBtn');
+  const zxmaxModal = document.getElementById('zxmaxModal');
+  const modalCoinBalance = document.getElementById('modalCoinBalance');
+  const transferAmount = document.getElementById('transferAmount');
+  const cancelTransfer = document.getElementById('cancelTransfer');
+  const confirmTransfer = document.getElementById('confirmTransfer');
+  const toast = document.getElementById('toast');
+
+  const LS_COINS = 'tictactoe_coins';
+  const LS_WINS = 'tictactoe_wins';
+  const LS_LOSSES = 'tictactoe_losses';
+  const LS_DRAWS = 'tictactoe_draws';
+
+  function lsGet(key, def) {
+    try {
+      const val = localStorage.getItem(key);
+      return val !== null ? JSON.parse(val) : def;
+    } catch { return def; }
+  }
+  function lsSet(key, val) {
+    localStorage.setItem(key, JSON.stringify(val));
+  }
+
+  function getCoins() { return lsGet(LS_COINS, 0); }
+  function setCoins(v) { lsSet(LS_COINS, v); updateCoinDisplay(); }
+  function addCoins(v) { setCoins(getCoins() + v); }
+
+  function getWins() { return lsGet(LS_WINS, 0); }
+  function setWins(v) { lsSet(LS_WINS, v); winDisplay.textContent = v; }
+  function getLosses() { return lsGet(LS_LOSSES, 0); }
+  function setLosses(v) { lsSet(LS_LOSSES, v); lossDisplay.textContent = v; }
+  function getDraws() { return lsGet(LS_DRAWS, 0); }
+  function setDraws(v) { lsSet(LS_DRAWS, v); drawDisplay.textContent = v; }
+
+  function updateCoinDisplay() {
+    coinDisplay.textContent = getCoins();
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  function checkWinner(boardArr) {
+    const lines = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    for (const [a,b,c] of lines) {
+      if (boardArr[a] && boardArr[a] === boardArr[b] && boardArr[a] === boardArr[c]) {
+        return { winner: boardArr[a], line: [a,b,c] };
+      }
+    }
+    if (boardArr.every(c => c !== null)) return { winner: 'draw', line: [] };
+    return null;
+  }
+
+  function renderBoard() {
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      cellEls[i].textContent = board[i] || '';
+      cellEls[i].classList.toggle('taken', board[i] !== null);
+      cellEls[i].classList.toggle('win-highlight', winCells.includes(i));
+    }
+  }
+
+  function disableBoard(disabled) {
+    for (const el of cellEls) {
+      el.classList.toggle('disabled', disabled);
+    }
+  }
+
+  function endGame(result) {
+    gameOver = true;
+    disableBoard(true);
+    winCells = result.line || [];
+    let msg = '';
+    if (result.winner === 'X') {
+      addCoins(20);
+      setWins(getWins() + 1);
+      msg = 'Siz yutdingiz! +20 tanga!';
+    } else if (result.winner === 'O') {
+      setLosses(getLosses() + 1);
+      msg = 'AI yutdi!';
+    } else if (result.winner === 'draw') {
+      addCoins(5);
+      setDraws(getDraws() + 1);
+      msg = 'Durang! +5 tanga';
+    }
+    statusEl.textContent = msg;
+    renderBoard();
+  }
+
+  function aiMove() {
+    if (gameOver || aiThinking) return;
+    aiThinking = true;
+    disableBoard(true);
+    statusEl.textContent = 'AI o\'ylayapti...';
+
+    setTimeout(() => {
+      const empty = board.map((v,i) => v === null ? i : null).filter(v => v !== null);
+      if (empty.length === 0 || gameOver) { aiThinking = false; return; }
+
+      let move = null;
+
+      function getWinner(boardArr, player) {
+        const lines = [
+          [0,1,2],[3,4,5],[6,7,8],
+          [0,3,6],[1,4,7],[2,5,8],
+          [0,4,8],[2,4,6]
+        ];
+        for (const [a,b,c] of lines) {
+          if (boardArr[a] && boardArr[a] === boardArr[b] && boardArr[a] === boardArr[c] && boardArr[a] === player) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // Try to win
+      for (const i of empty) {
+        const test = [...board];
+        test[i] = 'O';
+        if (getWinner(test, 'O')) { move = i; break; }
+      }
+
+      // Block player win
+      if (move === null) {
+        for (const i of empty) {
+          const test = [...board];
+          test[i] = 'X';
+          if (getWinner(test, 'X')) { move = i; break; }
+        }
+      }
+
+      // Random
+      if (move === null) {
+        move = empty[Math.floor(Math.random() * empty.length)];
+      }
+
+      board[move] = 'O';
+      aiThinking = false;
+
+      const result = checkWinner(board);
+      if (result) {
+        endGame(result);
+      } else {
+        currentPlayer = 'X';
+        statusEl.textContent = 'Sizning navbatingiz (X)';
+        disableBoard(false);
+        renderBoard();
+      }
+    }, 400);
+  }
+
+  function handleCellClick(e) {
+    const idx = parseInt(e.currentTarget.dataset.idx);
+    if (board[idx] !== null || gameOver || aiThinking || currentPlayer !== 'X') return;
+
+    board[idx] = 'X';
+    renderBoard();
+
+    const result = checkWinner(board);
+    if (result) {
+      endGame(result);
+    } else {
+      currentPlayer = 'O';
+      aiMove();
+    }
+  }
+
+  function resetGame() {
+    if (aiThinking) return;
+    board = Array(BOARD_SIZE).fill(null);
+    currentPlayer = 'X';
+    gameOver = false;
+    aiThinking = false;
+    winCells = [];
+    disableBoard(false);
+    renderBoard();
+    statusEl.textContent = 'Sizning navbatingiz (X)';
+  }
+
+  function openZxmaxModal() {
+    const coins = getCoins();
+    if (coins <= 0) {
+      showToast('O\'tkazish uchun tangalaringiz yo\'q');
+      return;
+    }
+    modalCoinBalance.textContent = coins;
+    transferAmount.value = coins;
+    transferAmount.max = coins;
+    zxmaxModal.classList.add('active');
+  }
+
+  function closeZxmaxModal() {
+    zxmaxModal.classList.remove('active');
+    transferAmount.value = '';
+  }
+
+  function doZxmaxTransfer() {
+    const amount = parseInt(transferAmount.value);
+    const coins = getCoins();
+
+    if (!amount || amount <= 0) {
+      showToast('Iltimos, to\'g\'ri miqdor kiriting');
+      return;
+    }
+    if (amount > coins) {
+      showToast('Tangalar yetarli emas');
+      return;
+    }
+
+    // Read zxmax active profile
+    let profileId = null;
+    try {
+      profileId = localStorage.getItem('zxmax_active_profile_v1');
+      if (profileId === 'null' || profileId === '') profileId = null;
+    } catch {}
+
+    if (profileId) {
+      const saveKey = 'zxmax_save_v1__' + profileId;
+      let zxState = null;
+      try {
+        const raw = localStorage.getItem(saveKey);
+        if (raw) zxState = JSON.parse(raw);
+      } catch {}
+
+      if (zxState && typeof zxState === 'object') {
+        zxState.coins = (zxState.coins || 0) + amount;
+        zxState.totalEarned = (zxState.totalEarned || 0) + amount;
+        localStorage.setItem(saveKey, JSON.stringify(zxState));
+      } else {
+        // Init fresh
+        zxState = { coins: amount, totalEarned: amount, totalSpent: 0, purchases: {}, lastDaily: null, lastQuickEarn: 0, theme: "default" };
+        localStorage.setItem(saveKey, JSON.stringify(zxState));
+      }
+    } else {
+      // Fallback
+      let zxState = null;
+      try {
+        const raw = localStorage.getItem('zxmax_save_v1');
+        if (raw) zxState = JSON.parse(raw);
+      } catch {}
+
+      if (zxState && typeof zxState === 'object') {
+        zxState.coins = (zxState.coins || 0) + amount;
+        zxState.totalEarned = (zxState.totalEarned || 0) + amount;
+        localStorage.setItem('zxmax_save_v1', JSON.stringify(zxState));
+      } else {
+        zxState = { coins: amount, totalEarned: amount, totalSpent: 0, purchases: {}, lastDaily: null, lastQuickEarn: 0, theme: "default" };
+        localStorage.setItem('zxmax_save_v1', JSON.stringify(zxState));
+      }
+    }
+
+    setCoins(coins - amount);
+    closeZxmaxModal();
+    showToast(`${amount} tanga zxmax ga o'tkazildi!`);
+  }
+
+  // Init event listeners
+  for (const el of cellEls) {
+    el.addEventListener('click', handleCellClick);
+  }
+
+  resetBtn.addEventListener('click', resetGame);
+  zxmaxBtn.addEventListener('click', openZxmaxModal);
+  cancelTransfer.addEventListener('click', closeZxmaxModal);
+  confirmTransfer.addEventListener('click', doZxmaxTransfer);
+
+  zxmaxModal.addEventListener('click', (e) => {
+    if (e.target === zxmaxModal) closeZxmaxModal();
+  });
+
+  transferAmount.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doZxmaxTransfer();
+  });
+
+  // Init UI
+  winDisplay.textContent = getWins();
+  lossDisplay.textContent = getLosses();
+  drawDisplay.textContent = getDraws();
+  updateCoinDisplay();
+  statusEl.textContent = 'Sizning navbatingiz (X)';
+})();
+</script>
+</body>
+</html>
