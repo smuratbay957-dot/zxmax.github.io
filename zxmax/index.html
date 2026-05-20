@@ -1,1 +1,487 @@
+<!DOCTYPE html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>zxmax — tangalar va do'kon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <header class="topbar">
+      <a class="logo" href="#home">zxmax</a>
+      <nav class="nav" aria-label="Asosiy">
+        <a href="#home" data-nav>Bosh sahifa</a>
+        <a href="#shop" data-nav class="nav-hide-mobile">Do'kon</a>
+        <a href="#earn" data-nav class="nav-hide-mobile">Tanga yig'ish</a>
+        <a href="#games" data-nav class="nav-hide-mobile">O'yinlar</a>
+        <a href="#leaderboard" data-nav>Reyting</a>
+        <a href="#tasks" data-nav>Vazifalar</a>
+        <a href="#chat" data-nav>Chat</a>
+        <a href="#admin" data-nav id="adminNav" style="display:none">Admin</a>
+      </nav>
+      <button type="button" class="hamburger" id="hamburgerBtn" aria-label="Menyu">
+        <span class="hamburger__line"></span>
+        <span class="hamburger__line"></span>
+        <span class="hamburger__line"></span>
+      </button>
+      <div class="topbar-actions">
+        <button type="button" class="btn ghost profile-open-btn" id="profileOpenBtn">
+          <span class="profile-open-btn__k">Profil</span>
+          <span class="profile-open-btn__name" id="profileBarName">—</span>
+        </button>
+        <div class="coin-pill" title="Jami tangalar (joriy profil)">
+          <span class="coin-icon" aria-hidden="true">◎</span>
+          <span id="coinDisplay">0</span>
+        </div>
+      </div>
+    </header>
 
+    <main>
+      <section id="home" class="panel active">
+        <div class="hero">
+          <p class="eyebrow">mini-platforma</p>
+          <h1>zxmax</h1>
+          <p class="lead">
+            Tangalarni yig'ing, do'konda sarflang. Bir kompyuterni bir necha kishi ishlatsa, yuqoridagi
+            <strong>Profil</strong> orqali har kishi uchun alohida balans yarating (akkaunt va server
+            shart emas — ma'lumotlar brauzerda). O'yinlardagi «zxmax ga o'tkazish»
+            joriy tanlangan profil balansiga tushadi.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#earn">Tanga olish</a>
+            <a class="btn ghost" href="#shop">Do'kon</a>
+          </div>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <h2>Kunlik bonus</h2>
+            <p>Har kuni bir marta bepul tanga.</p>
+            <button type="button" class="btn primary" id="dailyBtn">Bonusni olish</button>
+            <p class="hint" id="dailyHint"></p>
+          </article>
+          <article class="card">
+            <h2>Yutuqlar</h2>
+            <ul class="ach-list" id="achList"></ul>
+          </article>
+          <article class="card">
+            <h2>Statistika</h2>
+            <dl class="stats">
+              <div><dt>Jami ishlangan</dt><dd id="statSpent">0</dd></div>
+              <div><dt>Jami yig'ilgan</dt><dd id="statEarned">0</dd></div>
+              <div><dt>Sotib olingan</dt><dd id="statBought">0</dd></div>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <section id="shop" class="panel">
+        <div class="section-head">
+          <h1>Do'kon</h1>
+          <p class="muted">Tangalar bilan kosmetika va imkoniyatlar.</p>
+        </div>
+        <div class="shop-grid" id="shopGrid"></div>
+      </section>
+
+      <section id="earn" class="panel">
+        <div class="section-head">
+          <h1>Tanga yig'ish</h1>
+          <p class="muted">
+            O'yinlar, bonuslar va vazifalar orqali tanga ishlang.
+          </p>
+        </div>
+        <div class="cards">
+          <div id="boostStatus" style="display:none;flex-direction:column;gap:0.4rem;margin-bottom:0.5rem;padding:0.75rem;background:rgba(0,0,0,0.12);border-radius:12px;border:1px solid var(--border)"></div>
+          <article class="card wide">
+            <h2>Tez tanga</h2>
+            <p>Qisqa tanaffus: kichik miqdor, lekin tez.</p>
+            <button type="button" class="btn primary" id="quickEarnBtn">+ tanga</button>
+            <p class="hint" id="quickEarnHint"></p>
+          </article>
+          <article class="card wide">
+            <h2>Keyingi qadam: o'yinlar</h2>
+            <p>
+              Alohida HTML fayllar sifatida o'yin qo'shishingiz mumkin — ularni
+              <code>games/</code> papkasiga qo'ying va <a href="#games">O'yinlar</a>
+              bo'limida havola qiling.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="games" class="panel">
+        <div class="section-head">
+          <h1>O'yinlar</h1>
+          <p class="muted">O'ynang, tanga yutib oling va zxmax ga o'tkazing.</p>
+        </div>
+        <div class="games-grid">
+          <a class="game-tile game-tile--link" href="../games/Xotira%20oyini/index.html">
+            <span class="badge accent">mavjud</span>
+            <h2>Xotira o'yini</h2>
+            <p>Juft kartochkalarni toping, qiyinlikni tanlang, tangalarni zxmax ga o'tkazing.</p>
+            <span class="game-tile__action">O'ynash →</span>
+          </a>
+          <a class="game-tile game-tile--link" href="../games/Galaxy%20toysn/intex.html">
+            <span class="badge accent">mavjud</span>
+            <h2>Galaxy Tycoon</h2>
+            <p>Kosmosda pul ishlang, zavodlar quring va tangalarni zxmax ga o'tkazing.</p>
+            <span class="game-tile__action">O'ynash →</span>
+          </a>
+          <a class="game-tile game-tile--link" href="../games/Snake/index.html">
+            <span class="badge accent">mavjud</span>
+            <h2>Snake</h2>
+            <p>Klassik ilon o'yini — yegulik yig'ib, tanga ishlang.</p>
+            <span class="game-tile__action">O'ynash →</span>
+          </a>
+          <a class="game-tile game-tile--link" href="../games/TicTacToe/index.html">
+            <span class="badge accent">mavjud</span>
+            <h2>Tic-Tac-Toe</h2>
+            <p>AI ga qarshi o'ynang, yutib tanga oling.</p>
+            <span class="game-tile__action">O'ynash →</span>
+          </a>
+          <a class="game-tile game-tile--link" href="../games/NumberGuess/index.html">
+            <span class="badge accent">mavjud</span>
+            <h2>Son topish</h2>
+            <p>1 dan 100 gacha sonni toping, kam urinishda ko'proq tanga.</p>
+            <span class="game-tile__action">O'ynash →</span>
+          </a>
+          <a class="game-tile game-tile--link" href="../games/Reaksiya/index.html">
+            <span class="badge accent">mavjud</span>
+            <h2>Reaksiya testi</h2>
+            <p>Rang o'zgarganda tez bosing, tezlikka qarab tanga oling.</p>
+            <span class="game-tile__action">O'ynash →</span>
+          </a>
+        </div>
+      </section>
+
+      <section id="leaderboard" class="panel">
+        <div class="section-head">
+          <h1>Reyting</h1>
+          <p class="muted">Eng ko'p tanga yig'gan foydalanuvchilar.</p>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
+          <button type="button" class="btn ghost lb-filter" data-filter="all" style="flex:1;font-size:0.85rem;padding:0.4rem 0.5rem;border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">Hamma</button>
+          <button type="button" class="btn ghost lb-filter" data-filter="weekly" style="flex:1;font-size:0.85rem;padding:0.4rem 0.5rem;border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">Haftalik</button>
+          <button type="button" class="btn ghost lb-filter" data-filter="monthly" style="flex:1;font-size:0.85rem;padding:0.4rem 0.5rem;border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">Oylik</button>
+        </div>
+        <div class="leaderboard" id="leaderboardList"></div>
+      </section>
+
+      <section id="tasks" class="panel">
+        <div class="section-head">
+          <h1>Kunlik vazifalar</h1>
+          <p class="muted">Har kuni yangilanadi. Vazifalarni bajarib, qo'shimcha tanga oling.</p>
+        </div>
+        <div class="daily-tasks" id="tasksList"></div>
+      </section>
+
+      <section id="chat" class="panel">
+        <div class="section-head">
+          <h1>Chat</h1>
+          <p class="muted">Barcha foydalanuvchilar bilan muloqot.</p>
+        </div>
+        <div style="display:flex;gap:0.3rem;margin-bottom:0.75rem">
+          <button type="button" class="btn ghost chat-tab active" data-chtab="public" style="flex:1;font-size:0.85rem;padding:0.4rem 0.3rem;border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">🌍 Umumiy</button>
+          <button type="button" class="btn ghost chat-tab" data-chtab="friends" style="flex:1;font-size:0.85rem;padding:0.4rem 0.3rem;border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">👥 Do'stlar</button>
+          <button type="button" class="btn ghost chat-tab" data-chtab="groups" style="flex:1;font-size:0.85rem;padding:0.4rem 0.3rem;border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">👥 Guruhlar</button>
+          <button type="button" class="btn ghost chat-tab" data-chtab="requests" style="flex:1;font-size:0.85rem;padding:0.4rem 0.3rem;border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">📨 So'rovlar</button>
+        </div>
+        <div id="chatPublic" style="display:flex;flex-direction:column">
+          <div id="chatMessages" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:0.75rem;max-height:350px;overflow-y:auto;padding:0.5rem;background:rgba(0,0,0,0.1);border-radius:12px"></div>
+          <div style="display:flex;gap:0.5rem">
+            <input class="modal__input" id="chatInput" placeholder="Xabar yozish..." style="flex:1;min-width:0" />
+            <button type="button" class="btn primary" id="chatSendBtn">Yuborish</button>
+          </div>
+        </div>
+        <div id="chatFriends" style="display:none;flex-direction:column">
+          <div id="friendsList" style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.75rem;max-height:400px;overflow-y:auto;padding:0.5rem;background:rgba(0,0,0,0.1);border-radius:12px"></div>
+          <div id="privateChatArea" style="display:none;flex-direction:column;gap:0.5rem;border-top:1px solid var(--border);padding-top:0.75rem">
+            <div id="privateChatMessages" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:0.5rem;max-height:300px;overflow-y:auto;padding:0.5rem;background:rgba(0,0,0,0.1);border-radius:12px"></div>
+            <div style="display:flex;gap:0.5rem">
+              <input class="modal__input" id="privateChatInput" placeholder="Shaxsiy xabar..." style="flex:1;min-width:0" />
+              <button type="button" class="btn primary" id="privateChatSendBtn">Yuborish</button>
+            </div>
+          </div>
+        </div>
+        <div id="chatRequests" style="display:none;flex-direction:column">
+          <div id="friendRequestsList" style="display:flex;flex-direction:column;gap:0.4rem;max-height:400px;overflow-y:auto;padding:0.5rem;background:rgba(0,0,0,0.1);border-radius:12px"></div>
+        </div>
+        <div id="chatGroups" style="display:none;flex-direction:column">
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
+            <input class="modal__input" id="groupNameInput" placeholder="Guruh nomi..." style="flex:1;min-width:0" />
+            <button type="button" class="btn primary" id="createGroupBtn" style="white-space:nowrap">+ Guruh</button>
+          </div>
+          <div id="groupsList" style="display:flex;flex-direction:column;gap:0.4rem;max-height:180px;overflow-y:auto;padding:0.5rem;background:rgba(0,0,0,0.1);border-radius:12px;margin-bottom:0.5rem"></div>
+          <div id="groupChatArea" style="display:none;flex-direction:column;gap:0.5rem;border-top:1px solid var(--border);padding-top:0.75rem">
+            <div id="groupChatHeader" style="display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:0.95rem"></div>
+            <div id="groupChatMessages" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:0.5rem;max-height:300px;overflow-y:auto;padding:0.5rem;background:rgba(0,0,0,0.1);border-radius:12px"></div>
+            <div style="display:flex;gap:0.5rem">
+              <input class="modal__input" id="groupChatInput" placeholder="Guruhga xabar..." style="flex:1;min-width:0" />
+              <button type="button" class="btn primary" id="groupChatSendBtn">Yuborish</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="admin" class="panel">
+        <div class="section-head">
+          <h1>Admin panel</h1>
+          <p class="muted">Foydalanuvchilarni boshqarish.</p>
+        </div>
+        <div id="adminPanel"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>zxmax</span>
+      <span class="dot">·</span>
+      <span>profillar va tangalar brauzerda (localStorage); boshqa qurilmada ko'rinmaydi</span>
+    </footer>
+
+    <div id="loginModal" class="modal">
+      <div class="modal__backdrop" tabindex="-1" aria-hidden="true"></div>
+      <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+        <div id="loginForm">
+          <h2 class="modal__title" id="loginModalTitle">Kirish</h2>
+          <p class="modal__lead">Akkauntingizga kirish uchun username va parolni kiriting.</p>
+          <div class="modal__new">
+            <label class="modal__label" for="loginUsernameInput">Foydalanuvchi nomi</label>
+            <input class="modal__input" type="text" id="loginUsernameInput" maxlength="24" placeholder="Username" autocomplete="username" />
+          </div>
+          <div class="modal__new">
+            <label class="modal__label" for="loginPasswordInput">Parol</label>
+            <input class="modal__input" type="password" id="loginPasswordInput" placeholder="Parol" autocomplete="current-password" />
+          </div>
+          <div class="modal__row" style="margin-top:0.75rem;gap:0.5rem">
+            <button type="button" class="btn primary" id="loginBtn">Kirish</button>
+            <button type="button" class="btn ghost" id="showRegisterBtn">Ro'yxatdan o'tish</button>
+          </div>
+          <p class="hint" id="loginHint" style="margin-top:0.5rem!important"></p>
+          <div id="forgotPassSection" style="margin-top:0.5rem">
+            <div class="modal__row" id="forgotPassForm" hidden>
+              <button type="button" class="btn primary" id="sendRecoveryBtn" style="font-size:0.8rem;padding:0.4rem 0.7rem">Email jo'natish</button>
+              <span class="muted" id="recoveryStatus" style="font-size:0.82rem;align-self:center"></span>
+            </div>
+            <button type="button" class="btn ghost" id="forgotPassBtn" style="width:100%;margin-top:0.3rem;font-size:0.8rem;color:var(--muted)">Parolni unutdim</button>
+          </div>
+        </div>
+
+        <div id="registerForm" hidden>
+          <h2 class="modal__title">Ro'yxatdan o'tish</h2>
+          <p class="modal__lead">Yangi akkaunt yaratish uchun ma'lumotlarni to'ldiring.</p>
+          <div class="modal__new">
+            <label class="modal__label" for="registerUsernameInput">Foydalanuvchi nomi</label>
+            <input class="modal__input" type="text" id="registerUsernameInput" maxlength="24" placeholder="Username" autocomplete="username" />
+          </div>
+          <div class="modal__new">
+            <label class="modal__label" for="registerPasswordInput">Parol</label>
+            <input class="modal__input" type="password" id="registerPasswordInput" placeholder="Parol" autocomplete="new-password" />
+          </div>
+          <div class="modal__new">
+            <label class="modal__label" for="registerNameInput">Ism (ixtiyoriy)</label>
+            <input class="modal__input" type="text" id="registerNameInput" maxlength="24" placeholder="Ism yoki taxallus" />
+          </div>
+          <div class="modal__new">
+            <label class="modal__label" for="registerEmailInput">Email (parolni tiklash uchun)</label>
+            <input class="modal__input" type="email" id="registerEmailInput" maxlength="120" placeholder="email@example.com" autocomplete="email" />
+          </div>
+          <div class="modal__row" style="margin-top:0.75rem;gap:0.5rem">
+            <button type="button" class="btn primary" id="registerBtn">Ro'yxatdan o'tish</button>
+            <button type="button" class="btn ghost" id="showLoginBtn">Kirish</button>
+          </div>
+          <p class="hint" id="registerHint" style="margin-top:0.5rem!important"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="profileModal" class="modal" hidden>
+      <div class="modal__backdrop" data-close-modal tabindex="-1"></div>
+      <div class="modal__card modal__card--profile" role="dialog" aria-labelledby="profileModalTitle">
+
+        <div class="p-card">
+          <div class="p-card__cover">
+            <div class="p-card__avatar" id="profileAvatarDisplay">😀</div>
+          </div>
+          <div class="p-card__info">
+            <h2 class="p-card__name" id="profileNameDisplay">Ism</h2>
+            <span class="p-card__user" id="profileUsernameDisplay">@username</span>
+            <div id="profileUidDisplay"></div>
+          </div>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">🎨</span>
+            <span class="p-section__title">Avatar</span>
+          </div>
+          <div class="avatar-grid" id="avatarGrid"></div>
+          <div class="p-upload" style="margin-top:0.6rem">
+            <input type="file" id="customAvatarInput" accept="image/*" hidden />
+            <button type="button" class="btn ghost p-upload__btn" id="customAvatarBtn">📁 O'z rasmingiz — 3600◎</button>
+            <span id="customAvatarName" class="p-upload__name"></span>
+          </div>
+          <div id="customAvatarPreview" class="p-preview" hidden>
+            <img id="customAvatarImg" class="p-preview__img" />
+            <button type="button" class="btn primary" id="customAvatarSaveBtn">Saqlash — 3600◎</button>
+          </div>
+          <p class="hint" id="customAvatarHint"></p>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">✏️</span>
+            <span class="p-section__title">Ism</span>
+          </div>
+          <div class="p-row">
+            <input class="p-input" type="text" id="profileNameInput" maxlength="24" placeholder="Yangi ism" />
+            <button type="button" class="btn primary" id="changeNameBtn" style="white-space:nowrap">2000◎</button>
+          </div>
+          <p class="hint" id="profileNameHint"></p>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">📝</span>
+            <span class="p-section__title">Bio</span>
+          </div>
+          <textarea class="p-input p-input--area" id="profileBioInput" maxlength="500" placeholder="O'zingiz haqingizda qisqacha..." rows="2"></textarea>
+          <button type="button" class="btn primary" id="saveBioBtn" style="margin-top:0.35rem;font-size:0.82rem;padding:0.3rem 0.8rem">Saqlash</button>
+          <p class="hint" id="profileBioHint"></p>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">📧</span>
+            <span class="p-section__title">Email (parolni tiklash uchun)</span>
+          </div>
+          <div class="p-row">
+            <input class="p-input" type="email" id="profileEmailInput" maxlength="120" placeholder="email@example.com" />
+            <button type="button" class="btn primary" id="saveEmailBtn" style="white-space:nowrap;font-size:0.82rem;padding:0.3rem 0.8rem">Saqlash</button>
+          </div>
+          <p class="hint" id="profileEmailHint"></p>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">🎨</span>
+            <span class="p-section__title">Profil dizayni (boshqalarga ko'rinadi)</span>
+          </div>
+          <div class="p-design__grid" id="pDesignGrid"></div>
+          <div class="p-design__custom" id="pDesignCustomColors" style="display:none">
+            <div class="p-design__field"><label>Fon</label><input type="color" id="pDesignBg" value="#0f0f1a" /></div>
+            <div class="p-design__field"><label>Karta</label><input type="color" id="pDesignCard" value="#1a1a2e" /></div>
+            <div class="p-design__field"><label>Aksent</label><input type="color" id="pDesignAccent" value="#7c3aed" /></div>
+            <div class="p-design__field"><label>Matn</label><input type="color" id="pDesignText" value="#e2e8f0" /></div>
+          </div>
+          <div style="margin-top:0.5rem;display:flex;flex-direction:column;gap:0.35rem">
+            <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+              <input type="file" id="pDesignBgInput" accept="image/*" hidden />
+              <button type="button" class="btn ghost" id="pDesignBgBtn" style="font-size:0.8rem;padding:0.3rem 0.7rem">🖼 Orqa fon rasmi</button>
+              <span id="pDesignBgName" style="font-size:0.78rem;color:var(--muted)"></span>
+              <button type="button" class="btn ghost" id="pDesignBgClear" style="font-size:0.75rem;padding:0.2rem 0.5rem;display:none">✕</button>
+            </div>
+            <div id="pDesignBgPreview" style="display:none;width:100%;height:80px;border-radius:10px;border:1px solid var(--border);background-size:cover;background-position:center"></div>
+          </div>
+          <button type="button" class="btn primary" id="saveDesignBtn" style="margin-top:0.5rem;font-size:0.82rem;padding:0.3rem 0.8rem">Saqlash</button>
+          <p class="hint" id="pDesignHint"></p>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">📊</span>
+            <span class="p-section__title">O'yin statistikasi</span>
+          </div>
+          <div id="gameStatsList" class="p-stats"></div>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">🔍</span>
+            <span class="p-section__title">Foydalanuvchi qidirish</span>
+          </div>
+          <div class="p-row">
+            <input class="p-input" type="text" id="searchUserInput" maxlength="24" placeholder="Username yoki ism" />
+            <button type="button" class="btn primary" id="searchUserBtn" style="white-space:nowrap">Qidirish</button>
+          </div>
+          <div id="searchUserResult" class="p-subs" style="margin-top:0.4rem"></div>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">💸</span>
+            <span class="p-section__title">Tanga jo'natish</span>
+          </div>
+          <div class="p-row">
+            <input class="p-input" type="text" id="sendCoinsUsername" maxlength="24" placeholder="Username" />
+            <input class="p-input p-input--sm" type="number" id="sendCoinsAmount" min="1" placeholder="Miqdor" />
+            <button type="button" class="btn primary" id="sendCoinsBtn" style="white-space:nowrap">Jo'nat</button>
+          </div>
+          <p class="hint" id="sendCoinsHint"></p>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">👥</span>
+            <span class="p-section__title">Obuna bo'lganlar</span>
+          </div>
+          <div id="subscribedList" class="p-subs"></div>
+        </div>
+
+        <div class="p-section">
+          <div class="p-section__head">
+            <span class="p-section__icon">🔑</span>
+            <span class="p-section__title">Parolni o'zgartirish</span>
+          </div>
+          <div class="p-row">
+            <input class="p-input" type="password" id="changePassCurrent" placeholder="Hozirgi parol" />
+            <input class="p-input" type="password" id="changePassNew" placeholder="Yangi parol" />
+            <button type="button" class="btn primary" id="changePassBtn" style="white-space:nowrap">O'zgartirish</button>
+          </div>
+          <p class="hint" id="changePassHint"></p>
+        </div>
+
+        <div class="p-section" id="logoutSection" hidden>
+          <div class="p-section__head">
+            <span class="p-section__icon">🚪</span>
+            <span class="p-section__title">Akkaunt</span>
+          </div>
+          <p class="p-danger__desc" id="logoutUserLabel"></p>
+          <button type="button" class="btn" id="logoutBtn" style="border-color:var(--accent);color:var(--accent);font-size:0.85rem;font-weight:600">Chiqish</button>
+        </div>
+
+        <div class="p-section p-section--danger">
+          <div class="p-section__head">
+            <span class="p-section__icon">⚠️</span>
+            <span class="p-section__title">Akkauntni o'chirish</span>
+          </div>
+          <p class="p-danger__desc">Barcha ma'lumotlaringiz o'chadi va qayta tiklanmaydi.</p>
+          <button type="button" class="btn p-danger__btn" id="deleteAccountBtn">Akkauntni o'chirish</button>
+        </div>
+
+        <button type="button" class="btn ghost modal__close" data-close-modal>Yopish</button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
+    <script>
+      firebase.initializeApp({
+        apiKey: "AIzaSyAXBr7vgnGQHUUyHlIhXGwBwqfSYNYF-7o",
+        authDomain: "zxmax-com.firebaseapp.com",
+        projectId: "zxmax-com",
+        storageBucket: "zxmax-com.firebasestorage.app",
+        messagingSenderId: "215326277905",
+        appId: "1:215326277905:web:b5b3cad067e954ed3e4cb0",
+      });
+    </script>
+    <script src="app.js"></script>
+  </body>
+</html>
