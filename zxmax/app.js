@@ -220,7 +220,8 @@
         name, username,
         email: email,
         avatar: AVATARS[0],
-        bio: "", subscribedTo: [], role: null,
+        bio: "", subscribedTo: [],
+        role: window.ADMIN_CONFIG?.usernames?.includes(username) ? "admin" : null,
         coins: 0, totalEarned: 0, totalSpent: 0,
         purchases: {}, theme: "default", dailyTasks: {},
         lastDaily: null, lastQuickEarn: 0,
@@ -1738,11 +1739,13 @@
       hideModals();
       await loadUserData();
       if (!userData && !isRegistering) {
+        const autoUsername = fbUser.email?.split("@")[0] || "";
         await getUserDocRef(fbUser.uid).set({
-          name: fbUser.displayName || fbUser.email?.split("@")[0] || "User",
-          username: fbUser.email?.split("@")[0] || "",
+          name: fbUser.displayName || autoUsername || "User",
+          username: autoUsername,
           email: fbUser.email || "",
-          avatar: AVATARS[0], bio: "", subscribedTo: [], role: null,
+          avatar: AVATARS[0], bio: "", subscribedTo: [],
+          role: window.ADMIN_CONFIG?.usernames?.includes(autoUsername) ? "admin" : null,
           coins: 0, totalEarned: 0, totalSpent: 0,
           purchases: {}, theme: "default", dailyTasks: {},
           lastDaily: null, lastQuickEarn: 0,
