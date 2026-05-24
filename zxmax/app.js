@@ -1690,6 +1690,10 @@
         e.preventDefault();
         const panelId = a.getAttribute("href").slice(1);
         openPanel(panelId);
+        const nav = document.querySelector(".nav");
+        const ham = document.getElementById("hamburgerBtn");
+        if (nav) nav.classList.remove("open");
+        if (ham) ham.classList.remove("open");
       });
     });
     const hash = location.hash.slice(1) || "home";
