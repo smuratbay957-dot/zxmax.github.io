@@ -1,3 +1,3 @@
 window.ADMIN_CONFIG = {
-  usernames: ["admin", "sako", "aziko"]
+  usernames: ["aziko", "Aziko"]
 };
