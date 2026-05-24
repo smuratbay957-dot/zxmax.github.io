@@ -1,0 +1,17 @@
+{
+  "name": "zxmax",
+  "short_name": "zxmax",
+  "description": "Tangalar va do'kon — mini-platforma",
+  "start_url": "/zxmax/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0b0f",
+  "theme_color": "#0a0b0f",
+  "icons": [
+    {
+      "src": "/zxmax/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
