@@ -1114,6 +1114,13 @@ a {
   align-items: center;
 }
 
+img.admin-user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .admin-user-details {
   display: flex;
   flex-direction: column;
