@@ -1754,6 +1754,10 @@
         });
         await loadUserData();
       }
+      if (userData && window.ADMIN_CONFIG?.usernames?.includes(userData.username) && userData.role !== "admin") {
+        await getUserDocRef(fbUser.uid).update({ role: "admin" });
+        userData.role = "admin";
+      }
       syncUI();
       applyTheme();
     } else {
