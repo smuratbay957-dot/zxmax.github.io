@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Flappy Bird - zxmax</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;color:#e0e0ff;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overflow-x:hidden;min-height:100dvh;display:flex;justify-content:center;align-items:center;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#app{display:flex;flex-direction:column;align-items:center;width:100%;padding:8px;gap:8px;max-width:420px}
+.header{width:100%;display:flex;flex-direction:column;gap:6px}
+.back-link{color:#00ff88;text-decoration:none;font-size:clamp(13px,3.2vw,16px);font-weight:600;padding:4px 0;transition:opacity .2s;width:fit-content}
+.back-link:hover{opacity:.7}
+.top-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:#10102a;border:1px solid #00ff8833;border-radius:10px;padding:8px 14px}
+.top-bar .info{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.top-bar .info span{font-size:clamp(12px,3vw,15px);white-space:nowrap}
+.coin-icon{color:#ffcc00}
+.accent{color:#00ff88}
+#canvasWrapper{position:relative;width:100%;display:flex;justify-content:center;align-items:center;border-radius:12px;overflow:hidden;border:2px solid #00ff8833}
+canvas{display:block;touch-action:manipulation;background:#0a0a1a;width:100%;max-width:400px;height:auto;aspect-ratio:400/600;border-radius:10px}
+.btn{background:transparent;color:#00ff88;border:1.5px solid #00ff88;border-radius:8px;padding:6px 14px;font-size:clamp(12px,3vw,14px);cursor:pointer;font-weight:600;transition:all .2s;touch-action:manipulation}
+.btn:hover{background:#00ff8822}
+.btn-primary{background:#00ff88;color:#0a0a1a;border-color:#00ff88}
+.btn-primary:hover{background:#00ff77;box-shadow:0 0 20px #00ff8844}
+.overlay{position:fixed;inset:0;background:#0a0a1acc;backdrop-filter:blur(6px);display:none;justify-content:center;align-items:center;z-index:100;padding:16px}
+.overlay.active{display:flex}
+.modal{background:#12122a;border:1.5px solid #00ff8844;border-radius:16px;padding:clamp(20px,5vw,32px);max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 40px #00ff8811}
+.modal h2{font-size:clamp(20px,5vw,26px);color:#00ff88}
+.modal p{font-size:clamp(14px,3.5vw,17px);line-height:1.5}
+.modal .stat-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #ffffff0d}
+.modal .stat-row:last-child{border-bottom:none}
+.modal .stat-val{font-weight:700;color:#00ff88}
+.modal input[type=number]{width:100%;padding:10px 14px;background:#0a0a1a;border:1.5px solid #00ff8844;border-radius:8px;color:#e0e0ff;font-size:clamp(15px,4vw,18px);text-align:center;outline:none;touch-action:manipulation}
+.modal input[type=number]:focus{border-color:#00ff88}
+.modal .btn-group{display:flex;gap:8px;margin-top:4px}
+.modal .btn-group .btn{flex:1}
+#transferModal .modal{max-width:300px}
+@media(max-width:480px){
+#app{padding:6px;gap:6px;max-width:100%}
+.top-bar{padding:6px 10px;border-radius:8px}
+#canvasWrapper{border-radius:8px;border-width:1.5px}
+canvas{border-radius:8px}
+.modal{padding:18px;border-radius:12px}
+}
+@media(max-width:360px){
+#app{padding:4px;gap:4px}
+.top-bar{gap:4px;padding:5px 8px}
+.top-bar .info{gap:8px}
+.back-link{font-size:12px}
+.btn{padding:5px 10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="header">
+<a href="../../zxmax/index.html" class="back-link">← zxmax ga qaytish</a>
+<div class="top-bar">
+<div class="info">
+<span class="coin-icon">★ <span id="coinDisplay">0</span></span>
+<span>🏆 <span id="highScoreDisplay">0</span></span>
+</div>
+<button class="btn" id="transferOpenBtn">O'tkazish</button>
+</div>
+</div>
+<div id="canvasWrapper">
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+</div>
+</div>
+
+<div class="overlay" id="gameOverOverlay">
+<div class="modal">
+<h2>O'yin tugadi!</h2>
+<div class="stat-row"><span>Hisob</span><span class="stat-val" id="finalScore">0</span></div>
+<div class="stat-row"><span>Eng yaxshi</span><span class="stat-val" id="finalHighScore">0</span></div>
+<div class="stat-row"><span>Topilgan tangalar</span><span class="stat-val" id="coinsEarned">0</span></div>
+<div class="btn-group">
+<button class="btn btn-primary" id="restartBtn">Qayta boshlash</button>
+</div>
+</div>
+</div>
+
+<div class="overlay" id="transferOverlay">
+<div class="modal">
+<h2>Tangalarni o'tkazish</h2>
+<p>Mavjud tangalar: <strong class="accent" id="availableCoins">0</strong></p>
+<input type="number" id="transferAmount" placeholder="Miqdorni kiriting" min="1" value="10">
+<div class="btn-group">
+<button class="btn btn-primary" id="transferConfirmBtn">O'tkazish</button>
+<button class="btn" id="transferCloseBtn">Yopish</button>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+var c=document.getElementById('gameCanvas');
+var ctx=c.getContext('2d');
+var W=400,H=600,G=80,GAP=158,PW=50,BX=75;
+var bird,pipes,parts,stars,score,hs,coins,state,fc,gx,timer;
+var coinD=document.getElementById('coinDisplay');
+var hsD=document.getElementById('highScoreDisplay');
+
+function ld(k,d){try{var v=localStorage.getItem(k);return v!==null?parseInt(v)||0:d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,String(v))}catch(e){}}
+
+coins=ld('flappy_coins',0);
+hs=ld('flappy_highscore',0);
+coinD.textContent=coins;
+hsD.textContent=hs;
+
+function mkStars(){
+stars=[];
+for(var i=0;i<55;i++)stars.push({x:Math.random()*W,y:Math.random()*(H-G-40),r:Math.random()*1.6+0.4,a:Math.random()*0.5+0.25});
+}
+
+function reset(){
+bird={x:BX,y:260,vy:0,w:30,h:24,rot:0};
+pipes=[];
+parts=[];
+score=0;
+fc=0;
+gx=0;
+state='ready';
+timer=0;
+}
+
+function spwn(){
+var min=90;
+var max=H-G-90-GAP;
+var gy=min+Math.random()*(max-min);
+pipes.push({x:W+30,gy:gy,gs:GAP,w:PW,passed:false});
+}
+
+function fx(x,y,n,col){
+for(var i=0;i<n;i++)parts.push({x:x,y:y,vx:(Math.random()-0.5)*7,vy:(Math.random()-0.5)*7-3,life:1,dec:0.015+Math.random()*0.035,col:col||'#00ff88',sz:2+Math.random()*4});
+}
+
+function flap(){
+if(state==='ready'){
+state='playing';
+bird.vy=-7.5;
+fx(bird.x+bird.w/2,bird.y+bird.h/2,10,'#00ff88');
+}else if(state==='playing'){
+bird.vy=-7.5;
+fx(bird.x+bird.w/2,bird.y+bird.h/2,10,'#00ff88');
+}
+}
+
+function coll(p){
+var bx=bird.x,by=bird.y,bw=bird.w,bh=bird.h;
+var px=p.x,py=p.gy,pw=p.w,pg=p.gs;
+if(bx+bw>px&&bx<px+pw){
+if(by<py||by+bh>py+pg)return true;
+}
+return false;
+}
+
+function over(){
+state='gameover';
+var earned=score*10;
+coins+=earned;
+sv('flappy_coins',coins);
+coinD.textContent=coins;
+if(score>hs){hs=score;sv('flappy_highscore',hs);hsD.textContent=hs}
+document.getElementById('coinsEarned').textContent=earned;
+document.getElementById('finalScore').textContent=score;
+document.getElementById('finalHighScore').textContent=hs;
+document.getElementById('gameOverOverlay').classList.add('active');
+}
+
+function upd(){
+if(state==='playing'){
+bird.vy+=0.55;
+bird.y+=bird.vy;
+bird.rot=Math.min(Math.PI/4,Math.max(-Math.PI/4,bird.vy*0.05));
+if(bird.y+bird.h>H-G||bird.y<0){over();return}
+fc++;
+if(fc%90===0)spwn();
+gx-=2.5;
+if(gx<=-24)gx=0;
+for(var i=pipes.length-1;i>=0;i--){
+var p=pipes[i];
+p.x-=2.5;
+if(p.x+p.w<-30){pipes.splice(i,1);continue}
+if(!p.passed&&p.x+p.w<bird.x){p.passed=true;score++;fx(p.x+p.w,p.gy+p.gs/2,18,'#ffcc00')}
+if(coll(p)){over();return}
+}
+}
+if(state==='playing'||state==='gameover'){
+for(var i=parts.length-1;i>=0;i--){
+var pt=parts[i];
+pt.x+=pt.vx;pt.y+=pt.vy;pt.vy+=0.06;pt.life-=pt.dec;
+if(pt.life<=0)parts.splice(i,1);
+}
+}
+}
+
+function drw(){
+ctx.clearRect(0,0,W,H);
+ctx.fillStyle='#0a0a1a';
+ctx.fillRect(0,0,W,H);
+var grd=ctx.createLinearGradient(0,0,0,H);
+grd.addColorStop(0,'#0f0f2a');
+grd.addColorStop(0.5,'#0a0a1a');
+grd.addColorStop(1,'#080818');
+ctx.fillStyle=grd;
+ctx.fillRect(0,0,W,H);
+for(var i=0;i<stars.length;i++){
+var s=stars[i];
+ctx.globalAlpha=s.a;
+ctx.fillStyle='#e0e0ff';
+ctx.beginPath();
+ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+ctx.fill();
+}
+ctx.globalAlpha=1;
+for(var i=0;i<pipes.length;i++){var p=pipes[i];drwPipe(p)}
+ctx.fillStyle='#0a120a';
+ctx.fillRect(0,H-G,W,G);
+ctx.fillStyle='#00ff44';
+ctx.fillRect(0,H-G,W,3);
+ctx.fillStyle='#00ff4422';
+for(var x=gx;x<W;x+=24)ctx.fillRect(x,H-G+7,10,3);
+ctx.fillStyle='#00ff4411';
+for(var x=gx+12;x<W;x+=24)ctx.fillRect(x,H-G+14,10,3);
+for(var i=0;i<parts.length;i++){
+var pt=parts[i];
+ctx.globalAlpha=pt.life*0.8;
+ctx.fillStyle=pt.col;
+ctx.beginPath();
+ctx.arc(pt.x,pt.y,pt.sz,0,Math.PI*2);
+ctx.fill();
+}
+ctx.globalAlpha=1;
+drwBird();
+if(state==='playing'){
+ctx.textAlign='center';
+ctx.shadowColor='#00ff8844';
+ctx.shadowBlur=15;
+ctx.fillStyle='#00ff88';
+ctx.font='bold 44px monospace';
+ctx.fillText(score,W/2,52);
+ctx.shadowBlur=0;
+}
+if(state==='ready'){
+var bob=Math.sin(Date.now()/280)*4;
+bird.y=260+bob;
+ctx.textAlign='center';
+ctx.fillStyle='#00ff88';
+ctx.font='bold clamp(28px,7vw,38px) monospace';
+ctx.shadowColor='#00ff8844';
+ctx.shadowBlur=20;
+ctx.fillText('FLAPPY BIRD',W/2,175);
+ctx.shadowBlur=0;
+ctx.fillStyle='#e0e0ff';
+ctx.font='clamp(15px,4vw,20px) monospace';
+ctx.fillText("Boshlash uchun bosing",W/2,230);
+ctx.fillStyle='#00ff8833';
+ctx.font='14px monospace';
+ctx.fillText('▼',W/2,275);
+}
+}
+
+function drwBird(){
+ctx.save();
+ctx.translate(bird.x+bird.w/2,bird.y+bird.h/2);
+ctx.rotate(bird.rot);
+ctx.shadowColor='#ffcc0044';
+ctx.shadowBlur=12;
+ctx.fillStyle='#ffcc00';
+ctx.beginPath();
+ctx.ellipse(0,0,bird.w/2,bird.h/2,0,0,Math.PI*2);
+ctx.fill();
+ctx.shadowBlur=0;
+ctx.fillStyle='#e6b800';
+ctx.beginPath();
+ctx.ellipse(-4,3,10,5,-0.3,0,Math.PI*2);
+ctx.fill();
+ctx.fillStyle='#fff';
+ctx.beginPath();
+ctx.arc(6,-5,5,0,Math.PI*2);
+ctx.fill();
+ctx.fillStyle='#1a1a2a';
+ctx.beginPath();
+ctx.arc(8,-5,2.5,0,Math.PI*2);
+ctx.fill();
+ctx.fillStyle='#fff';
+ctx.beginPath();
+ctx.arc(9,-6.5,1,0,Math.PI*2);
+ctx.fill();
+ctx.fillStyle='#ff6600';
+ctx.beginPath();
+ctx.moveTo(12,-1);
+ctx.lineTo(23,2);
+ctx.lineTo(12,6);
+ctx.closePath();
+ctx.fill();
+ctx.restore();
+}
+
+function drwPipe(p){
+var x=p.x,gy=p.gy,w=p.w,gs=p.gs;
+ctx.fillStyle='#00bb33';
+ctx.fillRect(x,0,w,gy);
+ctx.fillStyle='#009926';
+ctx.fillRect(x-4,gy-28,w+8,28);
+ctx.fillStyle='#33dd5588';
+ctx.fillRect(x+5,0,7,gy-28);
+ctx.fillStyle='#008822';
+ctx.fillRect(x+w-5,0,3,gy);
+var by=gy+gs,bh=H-G-by;
+ctx.fillStyle='#00bb33';
+ctx.fillRect(x,by,w,bh);
+ctx.fillStyle='#009926';
+ctx.fillRect(x-4,by,w+8,28);
+ctx.fillStyle='#33dd5588';
+ctx.fillRect(x+5,by+28,7,bh-28);
+ctx.fillStyle='#008822';
+ctx.fillRect(x+w-5,by,3,bh);
+ctx.fillStyle='#00ff4411';
+ctx.fillRect(x-6,gy-4,w+12,4);
+ctx.fillRect(x-6,by+gs-4,w+12,4);
+}
+
+function loop(){
+upd();
+drw();
+requestAnimationFrame(loop);
+}
+
+function resize(){
+var wrap=document.getElementById('canvasWrapper');
+var mw=Math.min(window.innerWidth-16,400);
+var mh=Math.min(window.innerHeight-145,600);
+var sc=Math.min(mw/W,mh/H);
+c.style.width=(W*sc)+'px';
+c.style.height=(H*sc)+'px';
+}
+window.addEventListener('resize',resize);
+
+var lastTap=0;
+function onInput(e){
+if(e.type==='touchstart')e.preventDefault();
+var now=Date.now();
+if(now-lastTap>200){lastTap=now;flap()}
+}
+c.addEventListener('touchstart',onInput,{passive:false});
+c.addEventListener('mousedown',onInput);
+
+document.getElementById('restartBtn').addEventListener('click',function(){
+document.getElementById('gameOverOverlay').classList.remove('active');
+reset();
+});
+
+document.getElementById('transferOpenBtn').addEventListener('click',function(){
+document.getElementById('availableCoins').textContent=coins;
+document.getElementById('transferAmount').value=Math.min(10,coins||1);
+document.getElementById('transferOverlay').classList.add('active');
+});
+
+document.getElementById('transferCloseBtn').addEventListener('click',function(){
+document.getElementById('transferOverlay').classList.remove('active');
+});
+
+document.getElementById('transferConfirmBtn').addEventListener('click',function(){
+var amt=parseInt(document.getElementById('transferAmount').value)||0;
+if(amt<=0){alert('Iltimos, to\'g\'ri miqdor kiriting');return}
+if(amt>coins){alert('Yetarli tanga mavjud emas');return}
+coins-=amt;
+sv('flappy_coins',coins);
+coinD.textContent=coins;
+document.getElementById('availableCoins').textContent=coins;
+alert(amt+' tanga muvaffaqiyatli o\'tkazildi!');
+document.getElementById('transferOverlay').classList.remove('active');
+});
+
+document.getElementById('transferOverlay').addEventListener('click',function(e){
+if(e.target===this)this.classList.remove('active');
+});
+
+document.getElementById('gameOverOverlay').addEventListener('click',function(e){
+if(e.target===this)this.classList.remove('active');
+});
+
+['touchstart','click'].forEach(function(ev){
+document.getElementById('transferAmount').addEventListener(ev,function(e){
+if(ev==='touchstart')e.stopPropagation();
+});
+});
+
+reset();
+mkStars();
+resize();
+loop();
+})();
+</script>
+</body>
+</html>

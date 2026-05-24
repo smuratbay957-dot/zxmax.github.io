@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Quiz o'yini</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -10,10 +10,11 @@
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     background: #0f0f1a;
     color: #e0e0e0;
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow-x: hidden;
   }
   .container {
     width: 100%;
@@ -32,7 +33,7 @@
     box-shadow: 0 4px 24px rgba(0,0,0,.4);
   }
   .top-bar h1 {
-    font-size: 20px;
+    font-size: clamp(16px, 5vw, 20px);
     font-weight: 700;
     background: linear-gradient(135deg, #f7971e, #ffd200);
     -webkit-background-clip: text;
@@ -46,12 +47,12 @@
     padding: 8px 16px;
     border-radius: 30px;
     font-weight: 700;
-    font-size: 18px;
+    font-size: clamp(14px, 4.5vw, 18px);
     color: #ffd700;
   }
   .coin-display::before {
     content: "🪙";
-    font-size: 20px;
+    font-size: clamp(16px, 5vw, 20px);
   }
   .card {
     background: #1a1a2e;
@@ -62,7 +63,7 @@
     margin-bottom: 20px;
   }
   .question-text {
-    font-size: 20px;
+    font-size: clamp(16px, 5vw, 20px);
     font-weight: 600;
     line-height: 1.5;
     margin-bottom: 24px;
@@ -70,7 +71,7 @@
   }
   .question-number {
     text-align: center;
-    font-size: 14px;
+    font-size: clamp(12px, 3.5vw, 14px);
     color: #888;
     margin-bottom: 10px;
   }
@@ -84,7 +85,7 @@
     color: #e0e0e0;
     padding: 14px 18px;
     border-radius: 14px;
-    font-size: 16px;
+    font-size: clamp(14px, 4vw, 16px);
     cursor: pointer;
     transition: all .2s;
     text-align: left;
@@ -95,8 +96,8 @@
   .option-btn.correct { background: #1b5e20; border-color: #4caf50; color: #a5d6a7; }
   .option-btn.wrong { background: #5e1b1b; border-color: #f44336; color: #ef9a9a; }
   .option-btn.disabled { cursor: default; opacity: .7; }
-  .option-btn .letter { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; background: #3a3a5a; margin-right: 12px; font-weight: 700; font-size: 14px; }
-  .feedback { text-align: center; margin-top: 18px; font-size: 16px; min-height: 28px; }
+  .option-btn .letter { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; background: #3a3a5a; margin-right: 12px; font-weight: 700; font-size: clamp(12px, 3.5vw, 14px); }
+  .feedback { text-align: center; margin-top: 18px; font-size: clamp(14px, 4vw, 16px); min-height: 28px; }
   .feedback.correct { color: #66bb6a; }
   .feedback.wrong { color: #ef5350; }
   .next-btn {
@@ -106,7 +107,7 @@
     margin-top: 18px;
     border: none;
     border-radius: 14px;
-    font-size: 17px;
+    font-size: clamp(14px, 4.25vw, 17px);
     font-weight: 700;
     cursor: pointer;
     transition: all .2s;
@@ -117,11 +118,11 @@
   .next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,210,0,.3); }
   .next-btn:disabled { opacity: .5; cursor: default; transform: none; box-shadow: none; }
   .result-screen { text-align: center; }
-  .result-screen h2 { font-size: 28px; margin-bottom: 8px; }
+  .result-screen h2 { font-size: clamp(22px, 7vw, 28px); margin-bottom: 8px; }
   .result-screen .big-coins { font-size: clamp(32px, 12vw, 52px); color: #ffd700; margin: 16px 0; }
-  .result-screen p { font-size: 16px; color: #aaa; margin-bottom: 6px; }
+  .result-screen p { font-size: clamp(14px, 4vw, 16px); color: #aaa; margin-bottom: 6px; }
   .btn-group { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
-  .btn-group button { flex: 1; min-width: clamp(80px, 30vw, 120px); padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all .2s; touch-action: manipulation; }
+  .btn-group button { flex: 1; min-width: clamp(80px, 30vw, 120px); padding: 14px; border: none; border-radius: 14px; font-size: clamp(14px, 4vw, 16px); font-weight: 700; cursor: pointer; transition: all .2s; touch-action: manipulation; }
   .btn-restart { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
   .btn-restart:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(118,75,162,.4); }
   .btn-transfer { background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a2e; }
@@ -138,35 +139,35 @@
     max-width: 420px; width: 90%; border: 1px solid #2a2a4a;
     box-shadow: 0 16px 48px rgba(0,0,0,.6);
   }
-  .modal h3 { font-size: 22px; margin-bottom: 8px; }
-  .modal p { color: #aaa; margin-bottom: 16px; font-size: 14px; }
+  .modal h3 { font-size: clamp(18px, 5.5vw, 22px); margin-bottom: 8px; }
+  .modal p { color: #aaa; margin-bottom: 16px; font-size: clamp(12px, 3.5vw, 14px); }
   .modal-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2a2a4a; }
   .modal-row:last-child { border-bottom: none; }
   .modal-row .label { color: #888; }
   .modal-row .value { font-weight: 700; color: #ffd700; }
   .modal .confirm-btn {
     width: 100%; padding: 14px; border: none; border-radius: 14px;
-    font-size: 17px; font-weight: 700; cursor: pointer; transition: all .2s;
+    font-size: clamp(14px, 4.25vw, 17px); font-weight: 700; cursor: pointer; transition: all .2s;
     background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a2e; margin-top: 18px; touch-action: manipulation;
   }
   .modal .confirm-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,210,0,.3); }
   .modal .confirm-btn:disabled { opacity: .4; cursor: default; }
   .modal .close-btn {
-    width: 100%; padding: 12px; border: 1px solid #3a3a5a; border-radius: 14px;
-    background: transparent; color: #aaa; font-size: 15px; cursor: pointer; margin-top: 8px; transition: all .2s; touch-action: manipulation;
+    width: 100%; padding: 14px; border: 1px solid #3a3a5a; border-radius: 14px;
+    background: transparent; color: #aaa; font-size: clamp(13px, 3.75vw, 15px); cursor: pointer; margin-top: 8px; transition: all .2s; touch-action: manipulation;
   }
   .modal .close-btn:hover { background: #252545; color: #fff; }
-  .modal .success { color: #66bb6a; text-align: center; font-size: 15px; margin-top: 12px; }
-  .modal .error { color: #ef5350; text-align: center; font-size: 15px; margin-top: 12px; }
+  .modal .success { color: #66bb6a; text-align: center; font-size: clamp(13px, 3.75vw, 15px); margin-top: 12px; }
+  .modal .error { color: #ef5350; text-align: center; font-size: clamp(13px, 3.75vw, 15px); margin-top: 12px; }
 
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   .start-screen { text-align: center; }
-  .start-screen h2 { font-size: 32px; margin-bottom: 10px; background: linear-gradient(135deg, #f7971e, #ffd200); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .start-screen p { color: #aaa; font-size: 16px; margin-bottom: 24px; }
+  .start-screen h2 { font-size: clamp(24px, 8vw, 32px); margin-bottom: 10px; background: linear-gradient(135deg, #f7971e, #ffd200); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .start-screen p { color: #aaa; font-size: clamp(14px, 4vw, 16px); margin-bottom: 24px; }
   .start-btn {
     padding: 16px 48px; border: none; border-radius: 16px;
-    font-size: 20px; font-weight: 700; cursor: pointer;
+    font-size: clamp(16px, 5vw, 20px); font-weight: 700; cursor: pointer;
     background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a2e;
     transition: all .2s;
     touch-action: manipulation;
@@ -177,11 +178,17 @@
     .top-bar { padding: 10px 14px; }
     .card { padding: 20px 16px; }
     .modal { padding: 24px 18px; }
+    .btn-group button { padding: 12px; }
+    .start-btn { padding: 14px 40px; }
   }
   @media (max-width: 360px) {
     .top-bar { padding: 8px 10px; }
-    .card { padding: 16px 12px; }
+    .card { padding: 16px 12px; margin-bottom: 14px; }
     .modal { padding: 20px 14px; }
+    .container { padding: 12px; }
+    .question-text { margin-bottom: 16px; }
+    .options { gap: 8px; }
+    .btn-group { gap: 8px; }
   }
 </style>
 </head>
@@ -216,7 +223,7 @@
       <button class="btn-transfer" onclick="openTransferModal()">zxmax ga o'tkazish</button>
     </div>
   </div>
-<a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;margin-top:20px;padding:8px;border-radius:8px;background:rgba(0,0,0,0.15)">← zxmax ga qaytish</a></div>
+<a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.3);font-size:clamp(11px, 3.25vw, 13px);text-decoration:none;margin-top:20px;padding:14px;border-radius:8px;background:rgba(0,0,0,0.15);touch-action:manipulation">← zxmax ga qaytish</a></div>
 
 <div id="transferModal" class="modal-overlay hidden">
   <div class="modal">
@@ -226,7 +233,7 @@
     <div class="modal-row"><span class="label">zxmax balansi (joriy)</span><span class="value" id="modalZxmaxBalance">0</span></div>
     <div class="modal-row"><span class="label">O'tkaziladigan</span><span class="value" id="modalTransferAmount">0</span></div>
     <div class="modal-row"><span class="label">Yangi zxmax balansi</span><span class="value" id="modalNewZxmaxBalance">0</span></div>
-    <button type="button" id="transferAllBtn" style="width:100%;padding:10px;border:1px solid #3a3a5a;border-radius:12px;background:transparent;color:#ffd700;font-size:14px;cursor:pointer;margin:8px 0;touch-action:manipulation" onclick="document.getElementById('confirmTransferBtn').click();return false">Hammasini o'tkazish</button>
+    <button type="button" id="transferAllBtn" style="width:100%;padding:14px;border:1px solid #3a3a5a;border-radius:12px;background:transparent;color:#ffd700;font-size:14px;cursor:pointer;margin:8px 0;touch-action:manipulation" onclick="document.getElementById('confirmTransferBtn').click();return false">Hammasini o'tkazish</button>
     <button class="confirm-btn" id="confirmTransferBtn" onclick="confirmTransfer()">✅ zxmax ga o'tkazish</button>
     <div id="transferStatus"></div>
     <button class="close-btn" onclick="closeTransferModal()">Yopish</button>

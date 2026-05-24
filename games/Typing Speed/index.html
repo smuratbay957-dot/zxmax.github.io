@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Typing Speed - zxmax</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; }
+body {
+  background: #0a0a1a;
+  color: #e0e0ff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.top-bar {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(8px, 2vw, 16px) clamp(12px, 3vw, 24px);
+  background: #12122a;
+  border-bottom: 1px solid #2a2a4a;
+}
+.top-bar .back-link {
+  color: #8888bb;
+  text-decoration: none;
+  font-size: clamp(13px, 2.5vw, 16px);
+  transition: color 0.2s;
+}
+.top-bar .back-link:hover { color: #00ff88; }
+.top-bar .coin-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(14px, 2.5vw, 18px);
+  font-weight: 700;
+  color: #ffd700;
+}
+.coin-icon { font-size: clamp(16px, 3vw, 20px); }
+.container {
+  width: 100%;
+  max-width: 520px;
+  padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 24px);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 3vw, 28px);
+}
+.screen { display: none; flex-direction: column; align-items: center; width: 100%; gap: clamp(14px, 3vw, 24px); }
+.screen.active { display: flex; }
+
+h1 {
+  font-size: clamp(24px, 6vw, 40px);
+  font-weight: 800;
+  color: #00ff88;
+  text-align: center;
+}
+h2 {
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: 700;
+  color: #e0e0ff;
+  text-align: center;
+}
+
+.start-desc {
+  text-align: center;
+  font-size: clamp(14px, 2.5vw, 17px);
+  color: #8888bb;
+  line-height: 1.6;
+}
+
+.btn {
+  background: #00ff88;
+  color: #0a0a1a;
+  border: none;
+  font-size: clamp(16px, 3vw, 20px);
+  font-weight: 700;
+  padding: clamp(12px, 2.5vw, 16px) clamp(32px, 8vw, 52px);
+  border-radius: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.2s, transform 0.1s;
+  text-align: center;
+}
+.btn:hover { background: #00cc6a; }
+.btn:active { transform: scale(0.96); }
+.btn-small {
+  font-size: clamp(13px, 2vw, 15px);
+  padding: clamp(8px, 1.5vw, 12px) clamp(16px, 4vw, 28px);
+}
+
+.game-info {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.info-item {
+  background: #12122a;
+  padding: clamp(6px, 1.5vw, 10px) clamp(10px, 2vw, 16px);
+  border-radius: 8px;
+  font-size: clamp(13px, 2vw, 16px);
+  color: #8888bb;
+  flex: 1;
+  text-align: center;
+  min-width: 70px;
+}
+.info-item span { color: #e0e0ff; font-weight: 700; }
+
+.word-display {
+  font-size: clamp(36px, 10vw, 60px);
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #e0e0ff;
+  text-align: center;
+  min-height: 1.3em;
+  word-break: break-all;
+}
+.word-display .char-matched { color: #00ff88; }
+.word-display .char-current { color: #ffd700; text-decoration: underline; text-underline-offset: 6px; }
+.word-display .char-wrong { color: #ff4455; }
+
+.game-input {
+  width: 100%;
+  max-width: 400px;
+  background: #12122a;
+  border: 2px solid #2a2a4a;
+  border-radius: 12px;
+  padding: clamp(14px, 3vw, 20px) clamp(12px, 2.5vw, 18px);
+  font-size: clamp(18px, 4vw, 26px);
+  color: #e0e0ff;
+  outline: none;
+  text-align: center;
+  touch-action: manipulation;
+  transition: border-color 0.2s;
+}
+.game-input:focus { border-color: #00ff88; }
+.game-input::placeholder { color: #555577; }
+
+.game-over-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: clamp(15px, 3vw, 18px);
+  padding: clamp(8px, 1.5vw, 12px) 0;
+  border-bottom: 1px solid #1a1a3a;
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: #8888bb; }
+.stat-value { color: #00ff88; font-weight: 700; }
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: #12122a;
+  border: 1px solid #2a2a4a;
+  border-radius: 16px;
+  padding: clamp(20px, 4vw, 32px);
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modal h3 { font-size: clamp(18px, 4vw, 24px); color: #e0e0ff; }
+.modal p { font-size: clamp(14px, 2.5vw, 16px); color: #8888bb; line-height: 1.5; }
+.modal .btn { width: 100%; }
+
+@media (max-width: 480px) {
+  .game-info { gap: 6px; }
+  .info-item { min-width: 60px; }
+}
+@media (max-width: 360px) {
+  .game-info { flex-direction: column; gap: 4px; }
+  .info-item { min-width: unset; }
+}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <a class="back-link" href="../../zxmax/index.html">← zxmax ga qaytish</a>
+  <div class="coin-display">
+    <span class="coin-icon">🪙</span>
+    <span id="coinCount">0</span>
+  </div>
+</div>
+
+<div class="container">
+  <div id="startScreen" class="screen active">
+    <h1>Typing Speed</h1>
+    <p class="start-desc">So'zlarni imkon qadar tez va to'g'ri yozing. Har bir to'g'ri so'z uchun +5 tanga. 60 soniya vaqtingiz bor!</p>
+    <button class="btn" id="startBtn">Boshlash</button>
+  </div>
+
+  <div id="gameScreen" class="screen">
+    <div class="game-info">
+      <div class="info-item">⏱ <span id="timer">60</span>s</div>
+      <div class="info-item">🎯 <span id="score">0</span></div>
+      <div class="info-item">⚡ <span id="wpm">0</span> WPM</div>
+      <div class="info-item">🎯 <span id="accuracy">100</span>%</div>
+    </div>
+    <div class="word-display" id="wordDisplay"></div>
+    <input class="game-input" id="gameInput" type="text" placeholder="So'zni yozing..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  </div>
+
+  <div id="gameOverScreen" class="screen">
+    <h2>O'yin tugadi!</h2>
+    <div class="game-over-stats" id="gameOverStats">
+      <div class="stat-row"><span class="stat-label">Ball</span><span class="stat-value" id="finalScore">0</span></div>
+      <div class="stat-row"><span class="stat-label">WPM</span><span class="stat-value" id="finalWpm">0</span></div>
+      <div class="stat-row"><span class="stat-label">Aniqlik</span><span class="stat-value" id="finalAccuracy">0%</span></div>
+      <div class="stat-row"><span class="stat-label">Tangalar</span><span class="stat-value" id="finalCoins">+0</span></div>
+    </div>
+    <button class="btn" id="restartBtn">Qaytadan boshlash</button>
+    <button class="btn btn-small" id="transferBtn">Tangalarni zxmax ga o'tkazish</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="transferModal">
+  <div class="modal">
+    <h3>Tangalarni o'tkazish</h3>
+    <p id="transferText">Barcha tangalarni zxmax hisobingizga o'tkazmoqchimisiz?</p>
+    <button class="btn btn-small" id="confirmTransfer">Ha, o'tkazish</button>
+    <button class="btn btn-small" style="background:#2a2a4a;color:#e0e0ff;" id="cancelTransfer">Bekor qilish</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  const WORDS = [
+    "apple", "house", "smile", "world", "light", "dance", "music", "river", "stone", "dream",
+    "plant", "ocean", "cloud", "flame", "bread", "grace", "peace", "bloom", "crisp", "dwarf",
+    "eagle", "frost", "giant", "honor", "jewel", "knife", "lemon", "maple", "noble", "olive",
+    "pearl", "queen", "rally", "solar", "tiger", "umbra", "vigor", "wheat", "youth", "zebra",
+    "beach", "charm", "depth", "fairy", "glass", "happy", "ivory", "jolly", "latch", "month",
+    "night", "orbit", "pilot", "quiet", "ruins", "sugar", "trust", "unity", "vivid", "witch"
+  ];
+  let COINS = parseInt(localStorage.getItem('typing_coins')) || 0;
+  let BEST = parseInt(localStorage.getItem('typing_best')) || 0;
+  let state = 'idle';
+  let timer = 60;
+  let score = 0;
+  let correctChars = 0;
+  let totalChars = 0;
+  let currentWord = '';
+  let timerInterval = null;
+  let usedIndices = [];
+  let correctCount = 0;
+
+  const coinDisplay = document.getElementById('coinCount');
+  const startScreen = document.getElementById('startScreen');
+  const gameScreen = document.getElementById('gameScreen');
+  const gameOverScreen = document.getElementById('gameOverScreen');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const transferBtn = document.getElementById('transferBtn');
+  const gameInput = document.getElementById('gameInput');
+  const wordDisplay = document.getElementById('wordDisplay');
+  const timerEl = document.getElementById('timer');
+  const scoreEl = document.getElementById('score');
+  const wpmEl = document.getElementById('wpm');
+  const accuracyEl = document.getElementById('accuracy');
+  const finalScore = document.getElementById('finalScore');
+  const finalWpm = document.getElementById('finalWpm');
+  const finalAccuracy = document.getElementById('finalAccuracy');
+  const finalCoins = document.getElementById('finalCoins');
+  const transferModal = document.getElementById('transferModal');
+  const transferText = document.getElementById('transferText');
+  const confirmTransfer = document.getElementById('confirmTransfer');
+  const cancelTransfer = document.getElementById('cancelTransfer');
+
+  function updateCoinDisplay() {
+    coinDisplay.textContent = COINS;
+  }
+
+  function pickWord() {
+    if (usedIndices.length >= WORDS.length) usedIndices = [];
+    let idx;
+    do { idx = Math.floor(Math.random() * WORDS.length); } while (usedIndices.includes(idx));
+    usedIndices.push(idx);
+    return WORDS[idx];
+  }
+
+  function calcWpm() { return Math.round((correctCount / ((60 - timer) / 60)) || 0); }
+  function calcAccuracy() {
+    if (totalChars === 0) return 100;
+    return Math.round((correctChars / totalChars) * 100);
+  }
+
+  function updateStats() {
+    scoreEl.textContent = score;
+    timerEl.textContent = timer;
+    wpmEl.textContent = calcWpm();
+    accuracyEl.textContent = calcAccuracy() + '%';
+  }
+
+  function renderWord(inputVal) {
+    let html = '';
+    for (let i = 0; i < currentWord.length; i++) {
+      const c = currentWord[i];
+      if (!inputVal || i >= inputVal.length) {
+        html += '<span class="char-current">' + c + '</span>';
+      } else if (inputVal[i] === c) {
+        html += '<span class="char-matched">' + c + '</span>';
+      } else {
+        html += '<span class="char-wrong">' + c + '</span>';
+      }
+    }
+    wordDisplay.innerHTML = html;
+  }
+
+  function nextWord() {
+    currentWord = pickWord();
+    gameInput.value = '';
+    renderWord('');
+    updateStats();
+  }
+
+  function endGame() {
+    state = 'idle';
+    clearInterval(timerInterval);
+    gameInput.disabled = true;
+    gameInput.blur();
+
+    const fScore = score;
+    const fWpm = calcWpm();
+    const fAcc = calcAccuracy();
+    const coinsEarned = correctCount * 5;
+    COINS += coinsEarned;
+    localStorage.setItem('typing_coins', COINS);
+    if (fScore > BEST) {
+      BEST = fScore;
+      localStorage.setItem('typing_best', BEST);
+    }
+    updateCoinDisplay();
+
+    finalScore.textContent = fScore;
+    finalWpm.textContent = fWpm;
+    finalAccuracy.textContent = fAcc + '%';
+    finalCoins.textContent = '+' + coinsEarned;
+
+    showScreen('gameOver');
+  }
+
+  function handleInput() {
+    if (state !== 'playing') return;
+    const val = gameInput.value;
+    for (let i = 0; i < val.length; i++) {
+      totalChars++;
+      if (i < currentWord.length && val[i] === currentWord[i]) correctChars++;
+    }
+    renderWord(val);
+    if (val === currentWord) {
+      score += 5;
+      correctCount++;
+      updateStats();
+      nextWord();
+    }
+  }
+
+  function startTimer() {
+    timer = 60;
+    timerEl.textContent = timer;
+    timerInterval = setInterval(function() {
+      timer--;
+      timerEl.textContent = timer;
+      wpmEl.textContent = calcWpm();
+      if (timer <= 0) endGame();
+    }, 1000);
+  }
+
+  function startGame() {
+    score = 0;
+    correctCount = 0;
+    correctChars = 0;
+    totalChars = 0;
+    usedIndices = [];
+    state = 'playing';
+    gameInput.disabled = false;
+    gameInput.value = '';
+    showScreen('game');
+    startTimer();
+    nextWord();
+    gameInput.focus();
+  }
+
+  function showScreen(name) {
+    startScreen.classList.remove('active');
+    gameScreen.classList.remove('active');
+    gameOverScreen.classList.remove('active');
+    if (name === 'start') startScreen.classList.add('active');
+    else if (name === 'game') gameScreen.classList.add('active');
+    else if (name === 'gameOver') gameOverScreen.classList.add('active');
+  }
+
+  function resetToStart() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    state = 'idle';
+    showScreen('start');
+  }
+
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', function() {
+    resetToStart();
+    startGame();
+  });
+
+  gameInput.addEventListener('input', handleInput);
+
+  transferBtn.addEventListener('click', function() {
+    if (COINS <= 0) {
+      transferText.textContent = 'Hisobingizda tanga mavjud emas!';
+      confirmTransfer.style.display = 'none';
+    } else {
+      transferText.textContent = 'Barcha ' + COINS + ' tangani zxmax hisobingizga o\'tkazmoqchimisiz?';
+      confirmTransfer.style.display = '';
+    }
+    transferModal.classList.add('active');
+  });
+
+  confirmTransfer.addEventListener('click', function() {
+    let zxCoins = parseInt(localStorage.getItem('zxmax_coins') || '0');
+    zxCoins += COINS;
+    localStorage.setItem('zxmax_coins', zxCoins);
+    COINS = 0;
+    localStorage.setItem('typing_coins', '0');
+    updateCoinDisplay();
+    transferModal.classList.remove('active');
+    transferText.textContent = 'Tangalar muvaffaqiyatli o\'tkazildi!';
+  });
+
+  cancelTransfer.addEventListener('click', function() {
+    transferModal.classList.remove('active');
+    if (COINS > 0) confirmTransfer.style.display = '';
+  });
+
+  transferModal.addEventListener('click', function(e) {
+    if (e.target === transferModal) transferModal.classList.remove('active');
+  });
+
+  updateCoinDisplay();
+})();
+</script>
+</body>
+</html>

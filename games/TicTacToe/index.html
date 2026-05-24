@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Tic-Tac-Toe</title>
 <style>
 * {
@@ -17,19 +17,20 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
 }
 .container {
   background: #1a1a2e;
   border-radius: 16px;
   padding: 30px;
   width: 420px;
-  max-width: 95vw;
+  max-width: 100%;
   box-shadow: 0 0 40px rgba(100, 100, 255, 0.15);
   text-align: center;
 }
 h1 {
-  font-size: 28px;
+  font-size: clamp(22px, 7vw, 28px);
   background: linear-gradient(135deg, #00d2ff, #7b2ff7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -49,13 +50,13 @@ h1 {
   min-width: 0;
 }
 .stat-card .label {
-  font-size: 11px;
+  font-size: clamp(9px, 2.5vw, 11px);
   color: #888;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 .stat-card .value {
-  font-size: 20px;
+  font-size: clamp(16px, 5vw, 20px);
   font-weight: 700;
   margin-top: 2px;
 }
@@ -102,7 +103,7 @@ h1 {
   50% { transform: scale(1.05); }
 }
 .status {
-  font-size: 16px;
+  font-size: clamp(14px, 4vw, 16px);
   margin: 12px 0;
   min-height: 26px;
   font-weight: 600;
@@ -119,12 +120,13 @@ h1 {
   color: #e0e0e0;
   padding: 10px 22px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
   font-weight: 600;
   min-height: 44px;
   min-width: 44px;
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
+  touch-action: manipulation;
 }
 .btn:hover {
   background: #1a5276;
@@ -170,15 +172,15 @@ h1 {
 }
 .modal h2 {
   margin-bottom: 8px;
-  font-size: 22px;
+  font-size: clamp(18px, 5.5vw, 22px);
 }
 .modal p {
   color: #aaa;
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
   margin-bottom: 14px;
 }
 .modal .amount {
-  font-size: 36px;
+  font-size: clamp(28px, 9vw, 36px);
   font-weight: 700;
   color: #f7d44a;
   margin: 10px 0;
@@ -199,7 +201,7 @@ input[type="number"] {
   border: 1px solid #333;
   background: #0f0f0f;
   color: #e0e0e0;
-  font-size: 16px;
+  font-size: clamp(14px, 4vw, 16px);
   outline: none;
   text-align: center;
   margin: 6px 0;
@@ -224,7 +226,7 @@ input[type="number"] {
   color: #fff;
   padding: 12px 28px;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
   font-weight: 600;
   opacity: 0;
   transition: opacity 0.3s, transform 0.3s;
@@ -239,12 +241,15 @@ input[type="number"] {
   .container { padding: 16px; }
   .stats { gap: 6px; }
   .stat-card { padding: 6px 8px; }
-  .stat-card .value { font-size: 16px; }
-  .stat-card .label { font-size: 9px; }
+  .stat-card .value { font-size: clamp(14px, 4vw, 16px); }
+  .stat-card .label { font-size: clamp(8px, 2vw, 9px); }
+  .btn { padding: 8px 14px; font-size: clamp(11px, 3vw, 13px); }
 }
 @media (max-width: 360px) {
   .stats { flex-wrap: wrap; }
   .stat-card { flex: 0 0 calc(50% - 6px); }
+  .container { padding: 10px; }
+  .btn { padding: 6px 10px; font-size: clamp(10px, 3vw, 11px); min-height: 40px; }
 }
 </style>
 </head>
@@ -290,7 +295,7 @@ input[type="number"] {
     <button class="btn btn-primary" id="resetBtn">♻ Yangi o'yin</button>
     <button class="btn btn-danger" id="zxmaxBtn">⟳ zxmax ga o'tkazish</button>
   </div>
-  <a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;margin-top:16px;padding:8px;border-radius:8px;background:rgba(0,0,0,0.15)">← zxmax ga qaytish</a>
+  <a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.3);font-size:clamp(11px,3vw,13px);text-decoration:none;margin-top:16px;padding:8px;border-radius:8px;background:rgba(0,0,0,0.15);min-height:44px;touch-action:manipulation">← zxmax ga qaytish</a>
 </div>
 
 <div class="modal-overlay" id="zxmaxModal">
@@ -300,7 +305,7 @@ input[type="number"] {
     <div class="amount" id="modalCoinBalance">0</div>
     <p style="color:#888;font-size:13px;margin:0 0 4px">Mavjud tangalar</p>
     <input type="number" id="transferAmount" min="1" placeholder="Miqdorni kiriting">
-    <button type="button" id="transferAllBtn" onclick="document.getElementById('transferAmount').value=document.getElementById('modalCoinBalance').textContent" style="width:100%;padding:10px;border:1px solid #7b2ff7;border-radius:8px;background:transparent;color:#7b2ff7;font-size:14px;font-weight:600;cursor:pointer;margin:4px 0;touch-action:manipulation">Hammasini o'tkazish</button>
+    <button type="button" id="transferAllBtn" onclick="document.getElementById('transferAmount').value=document.getElementById('modalCoinBalance').textContent" style="width:100%;padding:10px;border:1px solid #7b2ff7;border-radius:8px;background:transparent;color:#7b2ff7;font-size:clamp(12px,3.5vw,14px);font-weight:600;cursor:pointer;margin:4px 0;touch-action:manipulation;min-height:44px">Hammasini o'tkazish</button>
     <div class="btn-group">
       <button class="btn" id="cancelTransfer">Bekor qilish</button>
       <button class="btn btn-primary" id="confirmTransfer">O'tkazish</button>

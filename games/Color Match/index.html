@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Color Match - Rangni top!</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100dvh;overflow-x:hidden}
+body{background:#0a0a1a;color:#e0e0ff;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(8px,2vw,20px);user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+a{color:#00ff88;text-decoration:none;font-size:clamp(12px,3vw,16px);margin-top:clamp(8px,2vw,16px);display:inline-block}
+.top-bar{width:100%;max-width:400px;display:flex;justify-content:space-between;align-items:center;margin-bottom:clamp(8px,2vw,16px);gap:8px}
+.top-bar .coins{display:flex;align-items:center;gap:6px;font-size:clamp(14px,4vw,20px);font-weight:700}
+.top-bar .coins::before{content:'🪙';font-size:clamp(16px,4.5vw,24px)}
+.top-bar .best{font-size:clamp(11px,2.8vw,14px);color:#8888aa}
+.top-bar .timer{font-size:clamp(16px,4.5vw,24px);font-weight:700;font-variant-numeric:tabular-nums}
+.top-bar .timer.warning{color:#ff4444}
+.target-swatch{width:clamp(120px,50vw,200px);height:clamp(80px,25vw,130px);border-radius:16px;margin:clamp(4px,1.5vw,12px) 0;border:3px solid #1a1a3a;transition:background .2s;flex-shrink:0}
+.target-label{font-size:clamp(12px,3vw,16px);color:#8888aa;margin-bottom:clamp(4px,1vw,8px)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2vw,14px);max-width:400px;width:100%;margin:clamp(8px,2vw,16px) 0}
+.tile{aspect-ratio:1;border-radius:16px;border:3px solid #1a1a3a;cursor:pointer;transition:transform .1s,opacity .15s;min-height:44px;min-width:44px;touch-action:manipulation}
+.tile:active{transform:scale(0.94)}
+.tile.correct{animation:flashGreen .4s}
+.tile.wrong{animation:flashRed .4s}
+.tile.hidden{opacity:0.3;pointer-events:none}
+@keyframes flashGreen{0%{box-shadow:0 0 0 0 rgba(0,255,136,.7)}50%{box-shadow:0 0 0 20px rgba(0,255,136,0)}100%{box-shadow:0 0 0 0 rgba(0,255,136,0)}}
+@keyframes flashRed{0%{box-shadow:0 0 0 0 rgba(255,68,68,.7)}50%{box-shadow:0 0 0 20px rgba(255,68,68,0)}100%{box-shadow:0 0 0 0 rgba(255,68,68,0)}}
+.game-over-overlay{position:fixed;inset:0;background:rgba(10,10,26,.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:20px;text-align:center}
+.game-over-overlay.show{display:flex}
+.game-over-overlay h2{font-size:clamp(28px,8vw,48px);margin-bottom:8px}
+.game-over-overlay p{font-size:clamp(16px,4.5vw,24px);margin-bottom:4px;color:#8888aa}
+.game-over-overlay .score{font-size:clamp(36px,10vw,64px);font-weight:700;color:#00ff88;margin:8px 0}
+.game-over-overlay .new-best{color:#ffcc00;font-size:clamp(14px,3.5vw,20px);margin-bottom:12px}
+.btn{background:#00ff88;color:#0a0a1a;border:none;padding:clamp(10px,2.5vw,16px) clamp(24px,6vw,48px);font-size:clamp(14px,4vw,20px);font-weight:700;border-radius:12px;cursor:pointer;touch-action:manipulation;transition:opacity .15s;margin-top:8px}
+.btn:active{opacity:.7}
+.btn-danger{background:#ff4444;color:#fff}
+.modal-overlay{position:fixed;inset:0;background:rgba(10,10,26,.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:#12122a;border:2px solid #1a1a3a;border-radius:20px;padding:clamp(16px,4vw,32px);max-width:360px;width:100%;text-align:center}
+.modal h3{font-size:clamp(18px,5vw,26px);margin-bottom:12px}
+.modal p{font-size:clamp(14px,3.5vw,18px);color:#8888aa;margin-bottom:8px;line-height:1.5}
+.modal .amount{font-size:clamp(28px,7vw,42px);font-weight:700;color:#00ff88;margin:12px 0}
+.modal .btn-group{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+.modal .btn-group .btn{flex:1;min-width:100px}
+.hidden{display:none}
+@media(max-width:480px){.tiles{gap:10px}.top-bar{flex-wrap:wrap;justify-content:center}}
+@media(max-width:360px){.tiles{gap:6px}.top-bar .best{font-size:10px}.game-over-overlay h2{font-size:24px}}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+<div class="coins" id="coinDisplay">0</div>
+<div class="best" id="bestDisplay">Eng yaxshi: 0</div>
+<div class="timer" id="timerDisplay">30</div>
+</div>
+
+<div class="target-label">Qaysi rang?</div>
+<div class="target-swatch" id="targetSwatch"></div>
+
+<div class="tiles" id="tileContainer"></div>
+
+<button class="btn" id="startBtn" style="touch-action:manipulation">Boshlash</button>
+<button class="btn btn-danger" id="transferBtn" style="touch-action:manipulation;margin-top:8px">🪙 Zxmaxga o'tkazish</button>
+
+<a href="../../zxmax/index.html" style="touch-action:manipulation">← zxmax ga qaytish</a>
+
+<div class="game-over-overlay" id="gameOverOverlay">
+<h2>🎮 O'yin tugadi</h2>
+<p>Hisobingiz</p>
+<div class="score" id="finalScore">0</div>
+<div class="new-best hidden" id="newBestLabel">⭐ Yangi rekord!</div>
+<button class="btn" id="restartBtn" style="touch-action:manipulation">Qayta boshlash</button>
+</div>
+
+<div class="modal-overlay" id="transferModal">
+<div class="modal">
+<h3>🪙 Zxmaxga o'tkazish</h3>
+<p>Barcha tangalaringiz zxmax hisobingizga o'tkaziladi.</p>
+<div class="amount" id="transferAmount">0</div>
+<p style="font-size:clamp(12px,3vw,14px);color:#6666aa">Keyin tangalar qayta tiklanadi</p>
+<div class="btn-group">
+<button class="btn" id="confirmTransfer" style="touch-action:manipulation">O'tkazish</button>
+<button class="btn btn-danger" id="cancelTransfer" style="touch-action:manipulation">Bekor qilish</button>
+</div>
+</div>
+</div>
+
+<script>
+const COLORS = [
+'#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff',
+'#ff8800','#88ff00','#0088ff','#ff0088','#8800ff','#00ff88',
+'#ff4444','#44ff44','#4444ff','#ffff44','#ff44ff','#44ffff',
+'#ffaa00','#aa00ff','#00aaff','#ff0066','#66ff00','#0066ff',
+'#ff6600','#6600ff','#00ff66','#ff3366','#33ff66','#6633ff'
+];
+
+const TOTAL_TILES = 4;
+const START_TIME = 30;
+const TIME_BONUS = 3;
+const CORRECT_REWARD = 10;
+
+let coins = parseInt(localStorage.getItem('colormatch_coins')) || 0;
+let best = parseInt(localStorage.getItem('colormatch_best')) || 0;
+let gameActive = false;
+let timeLeft = START_TIME;
+let score = 0;
+let timerInterval = null;
+let currentCorrectColor = '';
+let tileElements = [];
+let isTransitioning = false;
+
+const coinDisplay = document.getElementById('coinDisplay');
+const bestDisplay = document.getElementById('bestDisplay');
+const timerDisplay = document.getElementById('timerDisplay');
+const targetSwatch = document.getElementById('targetSwatch');
+const tileContainer = document.getElementById('tileContainer');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const transferBtn = document.getElementById('transferBtn');
+const gameOverOverlay = document.getElementById('gameOverOverlay');
+const finalScore = document.getElementById('finalScore');
+const newBestLabel = document.getElementById('newBestLabel');
+const transferModal = document.getElementById('transferModal');
+const transferAmount = document.getElementById('transferAmount');
+const confirmTransfer = document.getElementById('confirmTransfer');
+const cancelTransfer = document.getElementById('cancelTransfer');
+
+function updateCoinDisplay(){
+coinDisplay.textContent = coins;
+}
+
+function updateBestDisplay(){
+bestDisplay.textContent = 'Eng yaxshi: ' + best;
+}
+
+function updateTimerDisplay(){
+timerDisplay.textContent = timeLeft;
+if(timeLeft <= 5){
+timerDisplay.classList.add('warning');
+}else{
+timerDisplay.classList.remove('warning');
+}
+}
+
+function getRandomColors(count){
+const shuffled = [...COLORS].sort(() => Math.random() - 0.5);
+return shuffled.slice(0, count);
+}
+
+function pickCorrectIndex(){
+return Math.floor(Math.random() * TOTAL_TILES);
+}
+
+function generateRound(){
+if(isTransitioning) return;
+isTransitioning = true;
+
+const colors = getRandomColors(TOTAL_TILES);
+const correctIndex = pickCorrectIndex();
+currentCorrectColor = colors[correctIndex];
+targetSwatch.style.background = currentCorrectColor;
+
+for(let i = 0; i < TOTAL_TILES; i++){
+const tile = tileElements[i];
+tile.style.background = colors[i];
+tile.dataset.color = colors[i];
+tile.classList.remove('correct','wrong','hidden');
+tile.style.animation = 'none';
+tile.offsetHeight;
+tile.style.animation = '';
+tile.style.pointerEvents = 'auto';
+tile.style.opacity = '1';
+}
+
+isTransitioning = false;
+}
+
+function endGame(){
+gameActive = false;
+if(timerInterval){
+clearInterval(timerInterval);
+timerInterval = null;
+}
+
+if(score > best){
+best = score;
+localStorage.setItem('colormatch_best', best);
+newBestLabel.classList.remove('hidden');
+}else{
+newBestLabel.classList.add('hidden');
+}
+
+finalScore.textContent = score;
+gameOverOverlay.classList.add('show');
+}
+
+function handleTileClick(e){
+const tile = e.currentTarget;
+if(!gameActive || tile.style.pointerEvents === 'none' || isTransitioning) return;
+
+const color = tile.dataset.color;
+
+if(color === currentCorrectColor){
+tile.classList.add('correct');
+score += CORRECT_REWARD;
+coins += CORRECT_REWARD;
+localStorage.setItem('colormatch_coins', coins);
+updateCoinDisplay();
+timeLeft += TIME_BONUS;
+updateTimerDisplay();
+
+for(let i = 0; i < TOTAL_TILES; i++){
+tileElements[i].style.pointerEvents = 'none';
+tileElements[i].style.opacity = '0.3';
+}
+
+setTimeout(() => {
+generateRound();
+}, 400);
+}else{
+tile.classList.add('wrong');
+gameActive = false;
+if(timerInterval){
+clearInterval(timerInterval);
+timerInterval = null;
+}
+
+for(let i = 0; i < TOTAL_TILES; i++){
+tileElements[i].style.pointerEvents = 'none';
+}
+
+setTimeout(() => {
+endGame();
+}, 500);
+}
+}
+
+function startGame(){
+if(gameActive) return;
+
+score = 0;
+timeLeft = START_TIME;
+gameActive = true;
+gameOverOverlay.classList.remove('show');
+updateTimerDisplay();
+
+generateRound();
+
+if(timerInterval) clearInterval(timerInterval);
+timerInterval = setInterval(() => {
+timeLeft--;
+updateTimerDisplay();
+if(timeLeft <= 0){
+endGame();
+}
+}, 1000);
+}
+
+function setupTiles(){
+tileContainer.innerHTML = '';
+tileElements = [];
+for(let i = 0; i < TOTAL_TILES; i++){
+const tile = document.createElement('div');
+tile.className = 'tile';
+tile.style.touchAction = 'manipulation';
+tile.addEventListener('click', handleTileClick);
+tileContainer.appendChild(tile);
+tileElements.push(tile);
+}
+}
+
+function showTransferModal(){
+if(coins <= 0){
+transferAmount.textContent = '0 tanga';
+confirmTransfer.style.display = 'none';
+setTimeout(() => {
+confirmTransfer.style.display = '';
+}, 100);
+transferModal.classList.add('show');
+return;
+}
+transferAmount.textContent = coins + ' tanga';
+transferModal.classList.add('show');
+}
+
+function doTransfer(){
+const totalZxmax = parseInt(localStorage.getItem('zxmax_coins')) || 0;
+localStorage.setItem('zxmax_coins', totalZxmax + coins);
+coins = 0;
+localStorage.setItem('colormatch_coins', 0);
+updateCoinDisplay();
+transferModal.classList.remove('show');
+}
+
+setupTiles();
+updateCoinDisplay();
+updateBestDisplay();
+updateTimerDisplay();
+startBtn.style.display = '';
+
+startBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', startGame);
+transferBtn.addEventListener('click', showTransferModal);
+confirmTransfer.addEventListener('click', doTransfer);
+cancelTransfer.addEventListener('click', () => transferModal.classList.remove('show'));
+transferModal.addEventListener('click', (e) => {
+if(e.target === transferModal) transferModal.classList.remove('show');
+});
+</script>
+</body>
+</html>

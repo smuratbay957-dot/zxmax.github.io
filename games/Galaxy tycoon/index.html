@@ -19,14 +19,16 @@
         @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
         .stats-bar {
-            position: fixed; top: 0; width: 100%; display: flex; justify-content: space-around;
+            position: fixed; top: 0; width: 100%; max-width: 100%; display: flex; justify-content: space-around;
             padding: 15px; background: rgba(15, 23, 42, 0.9); border-bottom: 2px solid var(--gold); z-index: 2000;
+            box-sizing: border-box;
         }
 
         #main-menu, .modal {
             position: fixed; inset: 0; display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 1500; gap: 15px;
             background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(15px);
+            touch-action: manipulation;
         }
 
         .menu-card {
@@ -37,7 +39,7 @@
 
         #promo-status {
             position: absolute; top: -60px; left: 0; width: 100%;
-            font-size: 22px; font-weight: 800; text-shadow: 0 0 15px rgba(0,0,0,0.8);
+            font-size: clamp(16px, 4vw, 22px); font-weight: 800; text-shadow: 0 0 15px rgba(0,0,0,0.8);
             animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-height: 30px;
         }
 
@@ -52,13 +54,15 @@
         .card { 
             background: #1e293b; padding: 15px; border-radius: 15px; text-align: center; 
             border: 2px solid transparent; transition: 0.3s;
+            touch-action: manipulation;
         }
         .card.active { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
-        .card h3 { margin: 5px 0; color: var(--accent); font-size: 16px; }
+        .card h3 { margin: 5px 0; color: var(--accent); font-size: clamp(13px, 3vw, 16px); }
 
         .btn {
             padding: 12px 20px; border: none; border-radius: 12px; cursor: pointer;
             font-weight: bold; transition: 0.3s; background: var(--accent); color: white;
+            touch-action: manipulation; min-height: 44px; min-width: 44px;
         }
         .btn:hover { transform: scale(1.05); filter: brightness(1.2); }
         
@@ -67,17 +71,19 @@
         .promo-input {
             padding: 10px; border-radius: 8px; border: 1px solid var(--accent);
             background: #0f172a; color: white; width: 80%; text-align: center;
-            font-size: 18px; margin-bottom: 10px;
+            font-size: clamp(14px, 4vw, 18px); margin-bottom: 10px;
+            touch-action: manipulation;
         }
 
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        #game-area { width: 100vw; height: 100vh; position: fixed; top:0; left:0; display: none; z-index: 1200; }
-        #play-zone { width: 100%; height: 100%; position: relative; }
+        #game-area { width: 100%; max-width: 100%; height: 100dvh; position: fixed; top: 0; left: 0; display: none; z-index: 1200; touch-action: manipulation; }
+        #play-zone { width: 100%; height: 100%; position: relative; touch-action: manipulation; }
         .target { 
-            position: absolute; font-size: 80px; cursor: pointer; 
+            position: absolute; font-size: clamp(40px, 12vw, 80px); cursor: pointer; 
             filter: drop-shadow(0 0 15px white); transition: transform 0.1s; 
             transform: translate(-50%, -50%);
+            touch-action: manipulation; min-width: 44px; min-height: 44px;
         }
 
         .black-hole {
@@ -87,22 +93,38 @@
             cursor: pointer; z-index: 1300; transform: translate(-50%, -50%);
             transition: all 0.5s ease; border: 1px solid rgba(255,255,255,0.05);
             animation: pulse-hole 2s infinite alternate;
+            touch-action: manipulation; min-width: 44px; min-height: 44px;
         }
 
         @keyframes pulse-hole { from { transform: translate(-50%, -50%) scale(0.9); opacity: 0.2; } to { transform: translate(-50%, -50%) scale(1.1); opacity: 0.4; } }
 
         @media (max-width: 480px) {
-            .stats-bar { padding: 10px 5px; font-size: 12px; }
-            .stats-bar > div { font-size: 12px; }
-            #main-menu h1 { font-size: 28px !important; }
+            .stats-bar { padding: 10px 5px; font-size: clamp(11px, 3vw, 12px); }
+            .stats-bar > div { font-size: clamp(11px, 3vw, 12px); }
+            #main-menu h1 { font-size: clamp(22px, 7vw, 28px) !important; }
             .menu-card { padding: 20px; }
-            .menu-card h2 { font-size: 18px; }
-            .btn { font-size: 12px; padding: 10px 12px; }
+            .menu-card h2 { font-size: clamp(15px, 4.5vw, 18px); }
+            .btn { font-size: clamp(11px, 3vw, 12px); padding: 10px 12px; }
             #main-menu > div { grid-template-columns: 1fr !important; }
-            #main-menu > button { width: 90% !important; font-size: 16px !important; }
+            #main-menu > button { width: 90% !important; font-size: clamp(14px, 4.5vw, 16px) !important; }
             .scroll-container { grid-template-columns: 1fr; }
-            .promo-input { font-size: 14px; }
-            #game-time { font-size: 28px !important; }
+            .promo-input { font-size: clamp(12px, 3.5vw, 14px); }
+            #game-time { font-size: clamp(22px, 7vw, 28px) !important; }
+        }
+
+        @media (max-width: 360px) {
+            .stats-bar { padding: 6px 3px; font-size: 10px; }
+            .stats-bar > div { font-size: 10px; }
+            #main-menu h1 { font-size: 22px !important; }
+            .menu-card { padding: 12px; }
+            .menu-card h2 { font-size: 14px; }
+            .btn { font-size: 10px; padding: 8px 8px; }
+            #main-menu > div { grid-template-columns: 1fr !important; gap: 8px; }
+            #main-menu > button { width: 95% !important; font-size: 13px !important; }
+            .scroll-container { grid-template-columns: 1fr; padding: 10px; gap: 8px; }
+            .promo-input { font-size: 12px; }
+            #game-time { font-size: 22px !important; }
+            .target { font-size: clamp(30px, 12vw, 40px); }
         }
     </style>
 </head>
@@ -116,7 +138,7 @@
     </div>
 
     <div id="main-menu">
-        <h1 style="font-size: 45px; color: var(--gold); margin: 0; text-shadow: 0 0 20px var(--gold);">GALAXY TYCOON</h1>
+        <h1 style="font-size: clamp(28px, 8vw, 45px); color: var(--gold); margin: 0; text-shadow: 0 0 20px var(--gold);">GALAXY TYCOON</h1>
         <p>Keyingi sovg‘a: <span id="daily-timer">...</span></p>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <button class="btn" id="daily-btn" onclick="claimDaily()">SOVGA 🎁</button>
@@ -126,8 +148,8 @@
             <button class="btn" style="background:#4b5563; grid-column: span 2;" onclick="openModal('promo-modal')">PROMO-KOD 🎟️</button>
             <button class="btn" style="background:#f97316; grid-column: span 2;" onclick="openTransferModal()">zxmax ga o'tkazish 💰</button>
         </div>
-        <button class="btn" style="width: 300px; margin-top: 20px; font-size: 20px; background: #10b981;" onclick="startGame()">Oyinni boshlash 🚀</button>
-        <a href="../../zxmax/index.html" style="position:fixed;bottom:10px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.4);font-size:13px;text-decoration:none;z-index:2000;padding:8px 16px;border-radius:8px;background:rgba(0,0,0,0.3);backdrop-filter:blur(4px)">← zxmax ga qaytish</a>
+        <button class="btn" style="width: min(80%, 300px); margin-top: 20px; font-size: clamp(16px, 4vw, 20px); background: #10b981;" onclick="startGame()">Oyinni boshlash 🚀</button>
+        <a href="../../zxmax/index.html" style="position:fixed;bottom:10px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.4);font-size:clamp(11px,2.5vw,13px);text-decoration:none;z-index:2000;padding:8px 16px;border-radius:8px;background:rgba(0,0,0,0.3);backdrop-filter:blur(4px)">← zxmax ga qaytish</a>
     </div>
 
     <div id="promo-modal" class="modal" style="display:none;">
@@ -165,14 +187,14 @@
     <div id="transfer-modal" class="modal" style="display:none;">
         <div class="menu-card">
             <h2 style="color:var(--gold)">zxmax ga o'tkazish</h2>
-            <p style="color:#94a3b8; font-size:14px;">Galaxy Tycoon pullarini zxmax asosiy balansiga o'tkazing.</p>
+            <p style="color:#94a3b8; font-size:clamp(12px,3vw,14px);">Galaxy Tycoon pullarini zxmax asosiy balansiga o'tkazing.</p>
             <p style="margin:10px 0;">Joriy pul: <b style="color:var(--gold)" id="transfer-bal">0</b> 💰</p>
             <input type="number" id="transfer-amount" class="promo-input" placeholder="Miqdor" min="1" style="width:100%;">
             <div style="display:flex; gap:10px; margin-top:10px;">
                 <button class="btn" style="flex:1; background:#475569;" onclick="document.getElementById('transfer-amount').value = gameData.balance">Hammasi</button>
                 <button class="btn" style="flex:1; background:#10b981;" id="transfer-btn">O'tkazish</button>
             </div>
-            <p id="transfer-status" style="font-size:14px; min-height:20px; margin:10px 0;"></p>
+            <p id="transfer-status" style="font-size:clamp(12px,3vw,14px); min-height:20px; margin:10px 0;"></p>
             <button class="btn" style="background:transparent; margin-top:5px;" onclick="closeModals()">Orqaga</button>
         </div>
     </div>
@@ -188,7 +210,7 @@
 
     <div id="game-area">
         <div id="play-zone"></div>
-        <div style="position:fixed; top:100px; left:30px; font-size:40px; font-weight:bold; color:#ef4444; text-shadow: 2px 2px #000; z-index:2100;">⏱️ <span id="game-time">30</span></div>
+        <div style="position:fixed; top:100px; left:30px; font-size:clamp(28px,8vw,40px); font-weight:bold; color:#ef4444; text-shadow: 2px 2px #000; z-index:2100;">⏱️ <span id="game-time">30</span></div>
     </div>
 
     <script>
@@ -324,7 +346,6 @@
                 updateUI();
             };
             bh.onmousedown = handleBlackHole;
-            bh.ontouchstart = handleBlackHole;
 
             const spawn = () => {
                 const oldTarget = zone.querySelector('.target');
@@ -345,7 +366,6 @@
                     updateUI(); spawn();
                 };
                 t.onmousedown = handleTarget;
-                t.ontouchstart = handleTarget;
                 zone.appendChild(t);
             };
 
@@ -405,7 +425,7 @@
             upgradeTypes.forEach((u, i) => {
                 const level = gameData.upgrades[i] || 0;
                 const cost = Math.floor(u.basePrice * Math.pow(1.5, level));
-                list.innerHTML += `<div class="card"><div style="font-size:30px">${u.icon}</div><h3>${u.name}</h3><p style="font-size:12px">DARAJA: ${level}</p><button class="btn" id="up-btn-${i}" onclick="buyUp(${i}, ${cost}, ${u.power})" style="font-size:12px">${cost.toLocaleString()} 💰</button></div>`;
+                list.innerHTML += `<div class="card"><div style="font-size:30px">${u.icon}</div><h3>${u.name}</h3><p style="font-size:clamp(10px,2.5vw,12px)">DARAJA: ${level}</p><button class="btn" id="up-btn-${i}" onclick="buyUp(${i}, ${cost}, ${u.power})" style="font-size:clamp(10px,2.5vw,12px)">${cost.toLocaleString()} 💰</button></div>`;
             });
         }
         function buyUp(i, cost, p) {
@@ -418,7 +438,7 @@
             items.forEach(item => {
                 const isUnl = gameData.unlocked.includes(item.id);
                 const isActive = gameData.active === item.id;
-                list.innerHTML += `<div class="card ${isActive ? 'active' : ''}"><div style="font-size:40px">${item.icon}</div><h3>${item.name}</h3><p style="color:var(--green); font-size:12px; margin-bottom:10px;">FOYDA: +${item.reward.toLocaleString()} 💰</p><button class="btn" id="shop-btn-${item.id}" onclick="buyItem('${item.id}', ${item.price})" style="width:100%; font-size:12px;">${isActive ? 'SAYLANDI' : (isUnl ? 'SAYLOMOQTA' : item.price.toLocaleString() + ' 💰')}</button></div>`;
+                list.innerHTML += `<div class="card ${isActive ? 'active' : ''}"><div style="font-size:40px">${item.icon}</div><h3>${item.name}</h3><p style="color:var(--green); font-size:clamp(10px,2.5vw,12px); margin-bottom:10px;">FOYDA: +${item.reward.toLocaleString()} 💰</p><button class="btn" id="shop-btn-${item.id}" onclick="buyItem('${item.id}', ${item.price})" style="width:100%; font-size:clamp(10px,2.5vw,12px);">${isActive ? 'SAYLANDI' : (isUnl ? 'SAYLOMOQTA' : item.price.toLocaleString() + ' 💰')}</button></div>`;
             });
         }
         function buyItem(id, p) {

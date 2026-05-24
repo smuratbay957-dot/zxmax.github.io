@@ -2,14 +2,15 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Reaksiya Test</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0d0d;color:#e0e0e0;min-height:100vh;display:flex;justify-content:center;align-items:center;overflow:hidden}
+button,a,[role="button"],input,select,textarea{touch-action:manipulation}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d0d0d;color:#e0e0e0;min-height:100dvh;display:flex;justify-content:center;align-items:center;overflow:hidden;overflow-x:hidden}
 #app{width:100%;max-width:480px;padding:16px;text-align:center;position:relative;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center}
-h1{font-size:28px;font-weight:700;background:linear-gradient(135deg,#ff416c,#ff4b2b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
-.top-bar{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;font-size:14px;z-index:10}
+h1{font-size:clamp(22px,5.5vw,28px);font-weight:700;background:linear-gradient(135deg,#ff416c,#ff4b2b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.top-bar{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;font-size:clamp(11px,3vw,14px);z-index:10}
 .coin-display{background:#1a1a2e;border:1px solid #ffd700;border-radius:20px;padding:6px 16px;color:#ffd700;font-weight:600;display:flex;align-items:center;gap:6px}
 .coin-display::before{content:"\2B50"}
 #round-info{background:#1a1a2e;border-radius:20px;padding:6px 16px;color:#aaa}
@@ -20,8 +21,8 @@ h1{font-size:28px;font-weight:700;background:linear-gradient(135deg,#ff416c,#ff4
 #game-area.state-ready{background:linear-gradient(145deg,#1b3a1b,#1a5a1a)}
 #game-area.state-cliked{background:linear-gradient(145deg,#1a1a3a,#2a1a4a)}
 #game-area.state-finished{background:linear-gradient(145deg,#1a1a1a,#2a2a2a)}
-#status-text{font-size:28px;font-weight:700;margin-bottom:8px;text-shadow:0 0 20px rgba(255,255,255,0.1)}
-#status-sub{font-size:16px;color:rgba(255,255,255,0.6)}
+#status-text{font-size:clamp(20px,6vw,28px);font-weight:700;margin-bottom:8px;text-shadow:0 0 20px rgba(255,255,255,0.1)}
+#status-sub{font-size:clamp(14px,3.5vw,16px);color:rgba(255,255,255,0.6)}
 .state-waiting #status-text{color:#ff6b6b}
 .state-ready #status-text{color:#51cf66}
 .state-cliked #status-text{color:#748ffc}
@@ -29,51 +30,52 @@ h1{font-size:28px;font-weight:700;background:linear-gradient(135deg,#ff416c,#ff4
 .state-ready #status-sub{color:rgba(81,207,102,0.6)}
 .state-waiting #status-sub::after{content:" \2022";animation:dotPulse 1s infinite}
 @keyframes dotPulse{0%,100%{opacity:0.3}50%{opacity:1}}
-#reaction-time{font-size:48px;font-weight:700;color:#e0e0e0;margin-top:8px;text-shadow:0 0 30px rgba(255,255,255,0.05)}
-#next-round-btn{background:linear-gradient(135deg,#ff416c,#ff4b2b);border:none;color:#fff;padding:12px 40px;border-radius:30px;font-size:18px;font-weight:600;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 4px 20px rgba(255,65,108,0.3);margin-top:16px;touch-action:manipulation}
+#reaction-time{font-size:clamp(32px,8vw,48px);font-weight:700;color:#e0e0e0;margin-top:8px;text-shadow:0 0 30px rgba(255,255,255,0.05)}
+#next-round-btn{background:linear-gradient(135deg,#ff416c,#ff4b2b);border:none;color:#fff;padding:13px 40px;border-radius:30px;font-size:clamp(16px,3.5vw,18px);font-weight:600;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 4px 20px rgba(255,65,108,0.3);margin-top:16px;touch-action:manipulation}
 #next-round-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(255,65,108,0.5)}
 #next-round-btn:active{transform:scale(0.97)}
 button{font-family:inherit}
 #instructions-screen,#game-screen,#results-screen{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
 #instructions-screen{text-align:left}
-#instructions-screen h2{font-size:22px;margin-bottom:16px;background:linear-gradient(135deg,#ff416c,#ff4b2b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#instructions-screen h2{font-size:clamp(18px,4.5vw,22px);margin-bottom:16px;background:linear-gradient(135deg,#ff416c,#ff4b2b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 #instructions-screen ul{list-style:none;padding:0;margin:0 0 24px 0}
-#instructions-screen ul li{padding:8px 0;padding-left:28px;position:relative;color:#ccc;font-size:15px;line-height:1.5}
+#instructions-screen ul li{padding:8px 0;padding-left:28px;position:relative;color:#ccc;font-size:clamp(13px,3.5vw,15px);line-height:1.5}
 #instructions-screen ul li::before{content:"";position:absolute;left:0;top:10px;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#ff416c,#ff4b2b);opacity:0.6}
-#start-btn{background:linear-gradient(135deg,#ff416c,#ff4b2b);border:none;color:#fff;padding:14px 60px;border-radius:30px;font-size:20px;font-weight:600;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 4px 20px rgba(255,65,108,0.3);display:block;margin:0 auto;touch-action:manipulation}
+#start-btn{background:linear-gradient(135deg,#ff416c,#ff4b2b);border:none;color:#fff;padding:14px 60px;border-radius:30px;font-size:clamp(16px,4vw,20px);font-weight:600;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 4px 20px rgba(255,65,108,0.3);display:block;margin:0 auto;touch-action:manipulation}
 #start-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(255,65,108,0.5)}
 #start-btn:active{transform:scale(0.97)}
-#transfer-btn{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:transform 0.15s;display:flex;align-items:center;gap:4px;touch-action:manipulation}
+#transfer-btn{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:16px 16px;border-radius:20px;font-size:clamp(11px,3vw,12px);font-weight:600;cursor:pointer;transition:transform 0.15s;display:flex;align-items:center;gap:4px;touch-action:manipulation}
 #transfer-btn:hover{transform:scale(1.05)}
 #transfer-btn::before{content:"\2192"}
 #results-list{width:100%;max-width:360px;margin:12px 0 20px}
-.result-row{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #222;font-size:14px}
+.result-row{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #222;font-size:clamp(12px,3vw,14px)}
 .result-row:nth-child(odd){background:rgba(255,255,255,0.02)}
 .result-row .rnum{color:#888;min-width:30px}
 .result-row .rtime{font-weight:600;color:#ddd}
 .result-row .rcoins{color:#ffd700}
-#total-score{font-size:32px;font-weight:700;background:linear-gradient(135deg,#ffd700,#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:8px 0}
-#play-again-btn{background:linear-gradient(135deg,#ff416c,#ff4b2b);border:none;color:#fff;padding:12px 50px;border-radius:30px;font-size:18px;font-weight:600;cursor:pointer;transition:transform 0.15s;box-shadow:0 4px 20px rgba(255,65,108,0.3);margin-top:8px;touch-action:manipulation}
+#total-score{font-size:clamp(24px,6vw,32px);font-weight:700;background:linear-gradient(135deg,#ffd700,#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:8px 0}
+#play-again-btn{background:linear-gradient(135deg,#ff416c,#ff4b2b);border:none;color:#fff;padding:13px 50px;border-radius:30px;font-size:clamp(16px,3.5vw,18px);font-weight:600;cursor:pointer;transition:transform 0.15s;box-shadow:0 4px 20px rgba(255,65,108,0.3);margin-top:8px;touch-action:manipulation}
 #play-again-btn:hover{transform:scale(1.05)}
-#results-screen h2{font-size:22px;margin-bottom:12px;background:linear-gradient(135deg,#ff416c,#ff4b2b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#results-screen h2{font-size:clamp(18px,4.5vw,22px);margin-bottom:12px;background:linear-gradient(135deg,#ff416c,#ff4b2b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .transfer-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:1000}
 .transfer-modal{background:#1a1a2e;border:1px solid #333;border-radius:20px;padding:28px;width:90%;max-width:380px;text-align:center}
-.transfer-modal h3{font-size:20px;margin-bottom:16px;color:#e0e0e0}
-.transfer-modal .info-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #2a2a3e}
+.transfer-modal h3{font-size:clamp(18px,4vw,20px);margin-bottom:16px;color:#e0e0e0}
+.transfer-modal .info-row{display:flex;justify-content:space-between;padding:8px 0;font-size:clamp(12px,3vw,14px);border-bottom:1px solid #2a2a3e}
 .transfer-modal .info-row span:first-child{color:#888}
 .transfer-modal .info-row span:last-child{color:#e0e0e0;font-weight:600}
-.transfer-modal input{width:100%;padding:12px 16px;border-radius:12px;border:1px solid #333;background:#0d0d1a;color:#e0e0e0;font-size:18px;text-align:center;margin:16px 0;outline:none;transition:border 0.2s}
+.transfer-modal input{width:100%;padding:12px 16px;border-radius:12px;border:1px solid #333;background:#0d0d1a;color:#e0e0e0;font-size:clamp(16px,4vw,18px);text-align:center;margin:16px 0;outline:none;transition:border 0.2s}
 .transfer-modal input:focus{border-color:#667eea}
 .transfer-modal .btn-row{display:flex;gap:12px;justify-content:center}
-.transfer-modal .btn-row button{padding:10px 28px;border-radius:20px;border:none;font-size:15px;font-weight:600;cursor:pointer;transition:transform 0.15s;touch-action:manipulation}
+.transfer-modal .btn-row button{padding:15px 28px;border-radius:20px;border:none;font-size:clamp(13px,3.5vw,15px);font-weight:600;cursor:pointer;transition:transform 0.15s;touch-action:manipulation}
 .transfer-modal .btn-row button:hover{transform:scale(1.04)}
 #transfer-confirm-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
 #transfer-cancel-btn{background:#2a2a3e;color:#999}
-.transfer-msg{font-size:13px;margin-top:12px;min-height:20px}
+.transfer-msg{font-size:clamp(11px,3vw,13px);margin-top:12px;min-height:20px}
 .transfer-msg.ok{color:#51cf66}
 .transfer-msg.err{color:#ff6b6b}
-@media(max-width:480px){.top-bar{top:8px;left:8px;right:8px;font-size:12px}#status-text{font-size:clamp(18px,6vw,28px)}.transfer-modal{padding:20px}.result-row{padding:6px 10px;font-size:12px}}
-@media(max-width:360px){.top-bar{gap:4px}}
+@media(max-width:480px){.top-bar{top:8px;left:8px;right:8px;font-size:12px;gap:6px}#status-text{font-size:clamp(18px,6vw,28px)}#reaction-time{font-size:clamp(28px,7vw,40px)}.transfer-modal{padding:20px}.result-row{padding:6px 10px;font-size:12px}#next-round-btn{padding:12px 32px}#play-again-btn{padding:12px 40px}#start-btn{padding:12px 48px}}
+@media(max-width:360px){.top-bar{gap:4px;font-size:11px}#status-text{font-size:clamp(16px,5.5vw,24px)}#reaction-time{font-size:clamp(24px,7vw,36px)}.transfer-modal{padding:16px}.transfer-modal .btn-row{flex-direction:column;gap:8px}.transfer-modal .btn-row button{width:100%;padding:14px 20px}}
+@media(max-width:320px){.top-bar{gap:3px;font-size:10px}.coin-display{padding:4px 10px}#round-info{padding:4px 10px}.area-wrap{margin:8px auto}}
 </style>
 </head>
 <body>
@@ -126,7 +128,7 @@ button{font-family:inherit}
     <button id="play-again-btn">Qayta o'ynash</button>
   </div>
 
-  <a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.3);font-size:12px;text-decoration:none;margin-top:12px;padding:6px;border-radius:6px;background:rgba(0,0,0,0.15)">← zxmax ga qaytish</a>
+  <a href="../../zxmax/index.html" style="display:block;text-align:center;color:rgba(255,255,255,0.3);font-size:12px;text-decoration:none;margin-top:12px;padding:16px;border-radius:6px;background:rgba(0,0,0,0.15);touch-action:manipulation">← zxmax ga qaytish</a>
 
 </div>
 
@@ -325,7 +327,7 @@ button{font-family:inherit}
         '<div class="info-row"><span>Hisobingiz</span><span id="tx-my-balance">' + coins + '</span></div>' +
         '<div class="info-row"><span>zxmax balansi</span><span id="tx-zx-balance">0</span></div>' +
         '<input type="number" id="tx-amount" min="1" placeholder="Miqdor" value="' + coins + '">' +
-        '<button type="button" id="tx-all-btn" style="width:100%;padding:8px;border-radius:12px;border:1px solid #667eea;background:transparent;color:#667eea;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;touch-action:manipulation">Hammasini o\'tkazish</button>' +
+        '<button type="button" id="tx-all-btn" style="width:100%;padding:15px;border-radius:12px;border:1px solid #667eea;background:transparent;color:#667eea;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;touch-action:manipulation">Hammasini o\'tkazish</button>' +
         '<div class="btn-row">' +
           '<button id="transfer-confirm-btn">O\'tkazish</button>' +
           '<button id="transfer-cancel-btn">Bekor qilish</button>' +
