@@ -89,7 +89,7 @@ tM.delete(id)}
 function crBG(){gE.querySelectorAll('.cell-bg').forEach(e=>e.remove());for(let i=0;i<S*S;i++){const e=document.createElement('div');e.className='cell-bg';gE.appendChild(e)}}
 function clrG(){gE.querySelectorAll('.tile').forEach(e=>e.remove());tM.clear();b=Array.from({length:S},()=>Array(S).fill(null))}
 function rndT(){const e=[];for(let r=0;r<S;r++)for(let c=0;c<S;c++)if(!b[r][c])e.push({r,c});if(!e.length)return null
-const p=e[Math.floor(Math.random()*e.length)],v=Math.random()<.9?2:4,id=nID++,t={id,v,row:p.r,col:p.c,el:null};tM.set(id,t);b[p.r][p.c]=t;return t}
+const p=e[Math.floor(Math.random()*e.length)],v=Math.random()<.9?2:4,id=nID++,t={id,value:v,row:p.r,col:p.c,el:null};tM.set(id,t);b[p.r][p.c]=t;return t}
 function inG(){crBG();clrG();sc=0;nID=0;goE.classList.add('hidden');ui();rndT();rndT();for(const[,t]of tM)cp(t)}
 function sr(r,m){let mv=!1;let ln=[];for(let c=0;c<S;c++)ln.push(b[r][c]);let cmp=[];let wp=0;for(let rp=0;rp<S;rp++){if(ln[rp]!==null){if(rp!==wp)mv=!0;cmp[wp]=ln[rp];wp++}}
 for(let i=wp;i<S;i++)cmp[i]=null;for(let i=0;i<S-1;i++){if(cmp[i]!==null&&cmp[i+1]!==null&&cmp[i].value===cmp[i+1].value){cmp[i].value*=2;sc+=cmp[i].value;m.push({t:cmp[i],s:cmp[i+1]});cmp[i+1]=null;mv=!0;for(let j=i+1;j<S-1;j++)cmp[j]=cmp[j+1];cmp[S-1]=null}}
