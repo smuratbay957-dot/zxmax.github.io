@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Futbol penalti</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">Futbol penalti</div>
+      <div class="wallet" title="Balans">
+        <span class="wallet__icon" aria-hidden="true">💰</span>
+        <span class="wallet__val" id="coinDisplay">0</span>
+      </div>
+    </header>
+
+    <section class="screen screen--home is-active" id="screenHome">
+      <h1 class="title">Futbol penalti</h1>
+      <p class="subtitle">Penalti tepish mahoratingizni sinang! 3 raund, 5 ta urinish.</p>
+      <div class="menu-actions">
+        <button type="button" class="btn btn--primary btn--wide" id="btnPlay">O'ynash</button>
+      </div>
+
+      <h2 class="section-title">Do'kon</h2>
+      <ul class="shop-list" id="shopList"></ul>
+
+      <div class="transfer-panel">
+        <h2 class="transfer-panel__title">zxmax ga o'tkazish</h2>
+        <p class="transfer-panel__desc">Tangalar zxmax profil balansiga qo'shiladi (10% komissiya).</p>
+        <div class="transfer-row">
+          <input type="number" class="transfer-input" id="transferAmount" min="1" inputmode="numeric" placeholder="Miqdor" aria-label="O'tkaziladigan miqdor">
+          <button type="button" class="btn btn--ghost transfer-all" id="transferAllBtn">Hammasi</button>
+        </div>
+        <button type="button" class="btn btn--primary btn--wide" id="transferBtn">O'tkazish</button>
+        <p class="transfer-hint" id="transferHint"></p>
+        <a class="transfer-link" href="../../zxmax/index.html">← zxmax ga qaytish</a>
+      </div>
+    </section>
+
+    <section class="screen screen--game" id="screenGame" hidden>
+      <div class="canvas-wrap">
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+      </div>
+      <div class="hud">
+        <div class="stat">
+          <span class="stat__label">Raund</span>
+          <span class="stat__value" id="roundDisplay">1 / 3</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Penalti</span>
+          <span class="stat__value" id="penaltyDisplay">1 / 5</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Gollar</span>
+          <span class="stat__value" id="goalsDisplay">0</span>
+        </div>
+        <button type="button" class="btn btn--ghost" id="btnExitGame">Menyu</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="overlay" id="gameOverOverlay" hidden>
+    <div class="overlay__card">
+      <h2 class="overlay__title" id="overlayTitle">O'yin tugadi!</h2>
+      <div class="overlay__text" id="overlayText"></div>
+      <button type="button" class="btn btn--primary" id="btnRestart">Yana o'ynash</button>
+      <button type="button" class="btn btn--ghost btn--wide overlay__second" id="btnHome">Menyu</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>
