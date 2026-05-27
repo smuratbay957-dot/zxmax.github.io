@@ -159,10 +159,10 @@
   async function saveUserData(updates) {
     if (!authUser) return;
     await getUserDocRef(authUser.uid).update(updates);
-    if (updates.coins !== undefined || updates.theme !== undefined) {
-      Object.assign(state, updates);
-    }
-    await loadUserData();
+    if (typeof updates.coins === 'number') state.coins = updates.coins;
+    if (updates.theme !== undefined) state.theme = updates.theme;
+    if (updates.purchases !== undefined) state.purchases = updates.purchases;
+    syncLocalStorageBridge();
   }
 
   function syncLocalStorageBridge() {
@@ -731,14 +731,16 @@
       if (snap.empty) { hint.textContent = "Foydalanuvchi topilmadi."; return; }
       const targetDoc = snap.docs[0];
       const batch = firebase.firestore().batch();
-      batch.update(getUserDocRef(authUser.uid), { coins: firebase.firestore.FieldValue.increment(-amount), totalSpent: firebase.firestore.FieldValue.increment(amount) });
+      batch.update(getUserDocRef(authUser.uid), { coins: state.coins - amount, totalSpent: firebase.firestore.FieldValue.increment(amount) });
       batch.update(targetDoc.ref, { coins: firebase.firestore.FieldValue.increment(amount), totalEarned: firebase.firestore.FieldValue.increment(amount), weekEarned: firebase.firestore.FieldValue.increment(amount), monthEarned: firebase.firestore.FieldValue.increment(amount) });
       await batch.commit();
+      state.coins -= amount;
+      state.totalSpent += amount;
+      syncLocalStorageBridge();
       hint.textContent = amount + " tanga @" + username + " ga jo'natildi!";
       hint.style.color = "var(--ok)";
       usernameInput.value = "";
       amountInput.value = "";
-      await loadUserData();
       syncProfileBar();
     } catch (e) { hint.textContent = e.message; }
   }
@@ -958,8 +960,9 @@
     const purchases = { ...state.purchases };
     purchases[itemId] = (purchases[itemId] || 0) + 1;
     try {
+      const newCoins = state.coins - item.price;
       const updates = {
-        coins: firebase.firestore.FieldValue.increment(-item.price),
+        coins: newCoins,
         totalSpent: firebase.firestore.FieldValue.increment(item.price),
         purchases: purchases,
       };
