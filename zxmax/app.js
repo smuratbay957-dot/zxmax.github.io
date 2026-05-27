@@ -161,9 +161,18 @@
   async function saveUserData(updates) {
     if (!authUser) return;
     await getUserDocRef(authUser.uid).update(updates);
-    if (typeof updates.coins === 'number') state.coins = updates.coins;
-    if (updates.theme !== undefined) state.theme = updates.theme;
-    if (updates.purchases !== undefined) state.purchases = updates.purchases;
+    const snap = await getUserDocRef(authUser.uid).get();
+    if (snap.exists) {
+      userData = { id: snap.id, ...snap.data() };
+      const d = userData;
+      state = {
+        coins: d.coins || 0, totalEarned: d.totalEarned || 0, totalSpent: d.totalSpent || 0,
+        purchases: d.purchases || {}, lastDaily: d.lastDaily || null,
+        lastQuickEarn: d.lastQuickEarn || 0, theme: d.theme || "default",
+        dailyTasks: d.dailyTasks || {}, streakCount: d.streakCount || 0,
+        boostEnd: d.boostEnd || null, magnetEnd: d.magnetEnd || null,
+      };
+    }
     syncLocalStorageBridge();
   }
 
