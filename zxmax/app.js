@@ -396,9 +396,9 @@
   async function saveCustomAvatar() {
     if (!customAvatarDataUrl) return;
     const hint = document.getElementById("customAvatarHint");
-    if ((state.totalEarned - state.totalSpent) < 3600) { hint.textContent = "Yetarli tanga yo'q."; return; }
+    if (state.coins < 3600) { hint.textContent = "Yetarli tanga yo'q."; return; }
     try {
-      await saveUserData({ avatar: customAvatarDataUrl, totalSpent: firebase.firestore.FieldValue.increment(3600) });
+      await saveUserData({ avatar: customAvatarDataUrl, coins: state.coins - 3600, totalSpent: firebase.firestore.FieldValue.increment(3600) });
       customAvatarDataUrl = null;
       hint.textContent = "Avatar saqlandi!";
       hint.style.color = "var(--ok)";
