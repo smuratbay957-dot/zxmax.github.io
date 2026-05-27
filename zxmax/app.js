@@ -50,6 +50,16 @@
     if (typeof s !== "string") return "";
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
+  function linkify(text) {
+    const imgExt = /\.(jpe?g|png|gif|webp|bmp)(\?.*)?$/i;
+    const urlRe = /(https?:\/\/[^\s<]+)/g;
+    return text.replace(urlRe, function(m){
+      if (imgExt.test(m)) {
+        return '<a href="'+m+'" target="_blank" rel="noopener"><img src="'+m+'" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" loading="lazy" onerror="this.outerHTML=\\'<a href=\\\\\\'"+m+"\\\\\\' target=_blank rel=noopener>\\\\\\'+m.replace(/</g,\\'&lt;\\')+\\'</a>\\'"></a>';
+      }
+      return '<a href="'+m+'" target="_blank" rel="noopener" style="color:var(--cyan)">'+m+'</a>';
+    });
+  }
 
   function getUserDocRef(uid) {
     return firebase.firestore().collection("users").doc(uid);
@@ -1160,11 +1170,17 @@
         snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
         container.innerHTML = msgs.map(m => {
           const isMe = m.uid === authUser?.uid;
+          let content = escapeHtml(m.text);
+          if (m.imageUrl) {
+            content = `<img src="${escapeHtml(m.imageUrl)}" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" onerror="this.style.display='none'" loading="lazy">`;
+          } else {
+            content = linkify(content);
+          }
           return `<div style="display:flex;gap:0.5rem;align-items:flex-start;padding:0.4rem 0.6rem;background:${isMe ? "rgba(99,102,241,0.1)" : "rgba(0,0,0,0.08)"};border-radius:10px;font-size:0.88rem">
-            <span style="font-size:1.1rem;flex-shrink:0">${escapeHtml(m.avatar || "😀")}</span>
+            ${m.avatar && m.avatar.startsWith("http") ? `<img src="${escapeHtml(m.avatar)}" style="width:24px;height:24px;border-radius:50%;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:1.1rem;flex-shrink:0>😀</span>'">` : `<span style="font-size:1.1rem;flex-shrink:0">${escapeHtml(m.avatar || "😀")}</span>`}
             <div style="flex:1;min-width:0">
               <div style="font-weight:600;font-size:0.78rem;color:var(--accent)">${escapeHtml(m.name)}</div>
-              <div style="color:var(--text);word-wrap:break-word">${escapeHtml(m.text)}</div>
+              <div style="color:var(--text);word-wrap:break-word">${content}</div>
             </div>
             <span style="font-size:0.68rem;color:var(--muted);flex-shrink:0;font-family:var(--mono)">${m.time ? new Date(m.time.toMillis ? m.time.toMillis() : m.time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : ""}</span>
           </div>`;
@@ -1322,9 +1338,15 @@
         snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
         msgsContainer.innerHTML = msgs.map(m => {
           const isMe = m.from === authUser?.uid;
+          let content = escapeHtml(m.text);
+          if (m.imageUrl) {
+            content = `<img src="${escapeHtml(m.imageUrl)}" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" onerror="this.style.display='none'" loading="lazy">`;
+          } else {
+            content = linkify(content);
+          }
           return `<div style="display:flex;gap:0.5rem;align-items:flex-start;padding:0.4rem 0.6rem;background:${isMe ? "rgba(99,102,241,0.1)" : "rgba(0,0,0,0.08)"};border-radius:10px;font-size:0.85rem">
             <div style="flex:1;min-width:0">
-              <div style="color:var(--text);word-wrap:break-word">${escapeHtml(m.text)}</div>
+              <div style="color:var(--text);word-wrap:break-word">${content}</div>
             </div>
             <span style="font-size:0.65rem;color:var(--muted);flex-shrink:0;font-family:var(--mono)">${m.time ? new Date(m.time.toMillis ? m.time.toMillis() : m.time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : ""}</span>
           </div>`;
@@ -1419,7 +1441,7 @@
             <span style="font-size:1rem;flex-shrink:0">${escapeHtml(m.avatar || "😀")}</span>
             <div style="flex:1;min-width:0">
               <div style="font-weight:600;font-size:0.78rem;color:var(--accent)">${escapeHtml(m.name)}</div>
-              <div style="color:var(--text);word-wrap:break-word">${escapeHtml(m.text)}</div>
+              <div style="color:var(--text);word-wrap:break-word">${m.imageUrl ? `<img src="${escapeHtml(m.imageUrl)}" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" onerror="this.style.display='none'" loading="lazy">` : linkify(escapeHtml(m.text))}</div>
             </div>
             <span style="font-size:0.65rem;color:var(--muted);flex-shrink:0;font-family:var(--mono)">${m.time ? new Date(m.time.toMillis ? m.time.toMillis() : m.time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : ""}</span>
           </div>`;
