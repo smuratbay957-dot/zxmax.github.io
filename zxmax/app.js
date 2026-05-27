@@ -55,9 +55,11 @@
     const urlRe = /(https?:\/\/[^\s<]+)/g;
     return text.replace(urlRe, function(m){
       if (imgExt.test(m)) {
-        return '<a href="'+m+'" target="_blank" rel="noopener"><img src="'+m+'" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" loading="lazy" onerror="this.outerHTML=\\'<a href=\\\\\\'"+m+"\\\\\\' target=_blank rel=noopener>\\\\\\'+m.replace(/</g,\\'&lt;\\')+\\'</a>\\'"></a>';
+        return '<a href="' + m + '" target="_blank" rel="noopener">' +
+          '<img src="' + m + '" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" loading="lazy"' +
+          ' onerror="this.outerHTML=\'<a href=&quot;' + m.replace(/"/g,'&quot;') + '&quot; target=_blank rel=noopener>' + m.replace(/</g,'&lt;') + '</a>\'"></a>';
       }
-      return '<a href="'+m+'" target="_blank" rel="noopener" style="color:var(--cyan)">'+m+'</a>';
+      return '<a href="' + m + '" target="_blank" rel="noopener" style="color:var(--cyan)">' + m + '</a>';
     });
   }
 
