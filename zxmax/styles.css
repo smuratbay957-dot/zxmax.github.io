@@ -952,14 +952,11 @@ a {
 .lb-avatar {
   font-size: 1.4rem;
   line-height: 1;
-  display: flex;
-  align-items: center;
-}
-.lb-avatar img {
-  width: 2rem;
-  height: 2rem;
+  width: 1.4rem;
+  height: 1.4rem;
   border-radius: 50%;
   object-fit: cover;
+  display: inline-block;
 }
 
 .lb-name {
