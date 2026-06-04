@@ -950,13 +950,14 @@ a {
 }
 
 .lb-avatar {
-  font-size: 1.4rem;
+  font-size: 0.9rem;
   line-height: 1;
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   object-fit: cover;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 .lb-name {
@@ -1660,6 +1661,11 @@ img.admin-user-avatar {
 
   .p-card__name {
     font-size: 1.1rem;
+  }
+
+  .lb-avatar {
+    width: 16px;
+    height: 16px;
   }
 
   .p-section {
