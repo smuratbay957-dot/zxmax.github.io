@@ -51,15 +51,25 @@
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
   function linkify(text) {
-    const imgExt = /\.(jpe?g|png|gif|webp|bmp)(\?.*)?$/i;
-    const urlRe = /(https?:\/\/[^\s<]+)/g;
-    return text.replace(urlRe, function(m){
-      if (imgExt.test(m)) {
-        return '<a href="' + m + '" target="_blank" rel="noopener">' +
-          '<img src="' + m + '" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" loading="lazy"' +
-          ' onerror="this.outerHTML=\'<a href=&quot;' + m.replace(/"/g,'&quot;') + '&quot; target=_blank rel=noopener>' + m.replace(/</g,'&lt;') + '</a>\'"></a>';
+    if (typeof text !== "string") return "";
+    const dataImgRe = /^data:image\/(jpe?g|png|gif|webp|bmp|svg);base64,/i;
+    if (dataImgRe.test(text.trim())) {
+      const u = text.trim();
+      return '<a href="' + u + '" target="_blank" rel="noopener">' +
+        '<img src="' + u + '" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" loading="lazy"' +
+        ' onerror="this.outerHTML=\'<a href=&quot;' + u.replace(/"/g,'&quot;') + '&quot; target=_blank rel=noopener>Rasm yuklanmadi</a>\'"></a>';
+    }
+    const imgExt = /\.(jpe?g|png|gif|webp|bmp|svg)(\?.*)?$/i;
+    const urlRe = /(https?:\/\/[^\s<>"']+)/g;
+    const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    return escaped.replace(urlRe, function(m){
+      const u = m.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
+      if (imgExt.test(u)) {
+        return '<a href="' + u + '" target="_blank" rel="noopener">' +
+          '<img src="' + u + '" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" loading="lazy"' +
+          ' onerror="this.outerHTML=\'<a href=&quot;' + u.replace(/"/g,'&quot;') + '&quot; target=_blank rel=noopener>' + u.replace(/</g,'&lt;') + '</a>\'"></a>';
       }
-      return '<a href="' + m + '" target="_blank" rel="noopener" style="color:var(--cyan)">' + m + '</a>';
+      return '<a href="' + u + '" target="_blank" rel="noopener" style="color:var(--cyan)">' + u + '</a>';
     });
   }
 
@@ -1152,8 +1162,22 @@
   let activePrivateChatId = null;
   let groupChatUnsub = null;
   let activeGroupId = null;
+  let chatInitDone = false;
+  const CHAT_CLOSE_HOUR = 0;
+  const CHAT_OPEN_HOUR = 6;
+
+  function isPublicChatOpen() {
+    const h = new Date().getHours();
+    return h >= CHAT_OPEN_HOUR || h < CHAT_CLOSE_HOUR;
+  }
+
+  function isNearBottom(el) {
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+  }
 
   function initChat() {
+    if (chatInitDone) return;
+    chatInitDone = true;
     // Tabs
     document.querySelectorAll(".chat-tab").forEach(tab => {
       tab.addEventListener("click", () => {
@@ -1175,23 +1199,27 @@
     if (sendBtn) sendBtn.addEventListener("click", sendChatMessage);
     if (input) input.addEventListener("keydown", e => { if (e.key === "Enter") sendChatMessage(); });
     if (chatUnsub) chatUnsub();
+    updateChatNightState();
+    setInterval(updateChatNightState, 30000);
     chatUnsub = firebase.firestore().collection("chat")
       .orderBy("time", "asc").limit(100)
       .onSnapshot(snap => {
         const container = document.getElementById("chatMessages");
         if (!container) return;
+        updateChatNightState();
+        const wasNearBottom = isNearBottom(container);
         const msgs = [];
         snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
         container.innerHTML = msgs.map(m => {
           const isMe = m.uid === authUser?.uid;
-          let content = escapeHtml(m.text);
+          let content;
           if (m.imageUrl) {
             content = `<img src="${escapeHtml(m.imageUrl)}" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" onerror="this.style.display='none'" loading="lazy">`;
           } else {
-            content = linkify(content);
+            content = linkify(m.text);
           }
           return `<div style="display:flex;gap:0.5rem;align-items:flex-start;padding:0.4rem 0.6rem;background:${isMe ? "rgba(99,102,241,0.1)" : "rgba(0,0,0,0.08)"};border-radius:10px;font-size:0.88rem">
-            ${m.avatar && m.avatar.startsWith("http") ? `<img src="${escapeHtml(m.avatar)}" style="width:24px;height:24px;border-radius:50%;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:1.1rem;flex-shrink:0>😀</span>'">` : `<span style="font-size:1.1rem;flex-shrink:0">${escapeHtml(m.avatar || "😀")}</span>`}
+            ${m.avatar && (m.avatar.startsWith("http") || m.avatar.startsWith("data:image/")) ? `<img src="${escapeHtml(m.avatar)}" style="width:24px;height:24px;border-radius:50%;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:1.1rem;flex-shrink:0>😀</span>'">` : `<span style="font-size:1.1rem;flex-shrink:0">${escapeHtml(m.avatar || "😀")}</span>`}
             <div style="flex:1;min-width:0">
               <div style="font-weight:600;font-size:0.78rem;color:var(--accent)">${escapeHtml(m.name)}</div>
               <div style="color:var(--text);word-wrap:break-word">${content}</div>
@@ -1199,7 +1227,10 @@
             <span style="font-size:0.68rem;color:var(--muted);flex-shrink:0;font-family:var(--mono)">${m.time ? new Date(m.time.toMillis ? m.time.toMillis() : m.time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : ""}</span>
           </div>`;
         }).join("");
-        container.scrollTop = container.scrollHeight;
+        if (wasNearBottom) container.scrollTop = container.scrollHeight;
+      }, err => {
+        const container = document.getElementById("chatMessages");
+        if (container) container.innerHTML = '<div class="user-list__empty">Chat yuklanmadi: ' + escapeHtml(err.message) + '</div>';
       });
     // Private chat
     document.getElementById("privateChatSendBtn")?.addEventListener("click", sendPrivateMessage);
@@ -1210,7 +1241,24 @@
     document.getElementById("groupChatInput")?.addEventListener("keydown", e => { if (e.key === "Enter") sendGroupMessage(); });
   }
 
+  function updateChatNightState() {
+    const open = isPublicChatOpen();
+    const input = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("chatSendBtn");
+    const nightMsg = document.getElementById("chatNightMsg");
+    if (!open) {
+      if (input) { input.disabled = true; input.placeholder = "🌙 Chat 00:00–06:00 yopiq"; }
+      if (sendBtn) sendBtn.disabled = true;
+      if (nightMsg) nightMsg.style.display = "block";
+    } else {
+      if (input) { input.disabled = false; input.placeholder = "Xabar yozish..."; }
+      if (sendBtn) sendBtn.disabled = false;
+      if (nightMsg) nightMsg.style.display = "none";
+    }
+  }
+
   async function sendChatMessage() {
+    if (!isPublicChatOpen()) { showToast("🌙 Chat 00:00–06:00 yopiq"); return; }
     const input = document.getElementById("chatInput");
     if (!input) return;
     const text = input.value.trim();
@@ -1348,15 +1396,16 @@
     privateChatUnsub = firebase.firestore().collection("privateChats").doc(activePrivateChatId)
       .collection("messages").orderBy("time", "asc").limit(100)
       .onSnapshot(snap => {
+        const wasNearBottom = isNearBottom(msgsContainer);
         const msgs = [];
         snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
         msgsContainer.innerHTML = msgs.map(m => {
           const isMe = m.from === authUser?.uid;
-          let content = escapeHtml(m.text);
+          let content;
           if (m.imageUrl) {
             content = `<img src="${escapeHtml(m.imageUrl)}" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" onerror="this.style.display='none'" loading="lazy">`;
           } else {
-            content = linkify(content);
+            content = linkify(m.text);
           }
           return `<div style="display:flex;gap:0.5rem;align-items:flex-start;padding:0.4rem 0.6rem;background:${isMe ? "rgba(99,102,241,0.1)" : "rgba(0,0,0,0.08)"};border-radius:10px;font-size:0.85rem">
             <div style="flex:1;min-width:0">
@@ -1365,7 +1414,9 @@
             <span style="font-size:0.65rem;color:var(--muted);flex-shrink:0;font-family:var(--mono)">${m.time ? new Date(m.time.toMillis ? m.time.toMillis() : m.time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : ""}</span>
           </div>`;
         }).join("");
-        msgsContainer.scrollTop = msgsContainer.scrollHeight;
+        if (wasNearBottom) msgsContainer.scrollTop = msgsContainer.scrollHeight;
+      }, err => {
+        msgsContainer.innerHTML = '<div class="user-list__empty">Xabarlar yuklanmadi: ' + escapeHtml(err.message) + '</div>';
       });
     // Focus input
     document.getElementById("privateChatInput")?.focus();
@@ -1447,20 +1498,23 @@
     groupChatUnsub = firebase.firestore().collection("groupChats").doc(groupId)
       .collection("messages").orderBy("time", "asc").limit(100)
       .onSnapshot(snap => {
+        const wasNearBottom = isNearBottom(msgsContainer);
         const msgs = [];
         snap.forEach(d => msgs.push({ id: d.id, ...d.data() }));
         msgsContainer.innerHTML = msgs.map(m => {
           const isMe = m.from === authUser?.uid;
           return `<div style="display:flex;gap:0.5rem;align-items:flex-start;padding:0.4rem 0.6rem;background:${isMe ? "rgba(99,102,241,0.1)" : "rgba(0,0,0,0.08)"};border-radius:10px;font-size:0.85rem">
-            <span style="font-size:1rem;flex-shrink:0">${escapeHtml(m.avatar || "😀")}</span>
+            ${m.avatar && m.avatar.startsWith("data:image/") ? `<img src="${escapeHtml(m.avatar)}" style="width:24px;height:24px;border-radius:50%;flex-shrink:0" onerror="this.outerHTML='<span style=font-size:1rem;flex-shrink:0>😀</span>'">` : `<span style="font-size:1rem;flex-shrink:0">${escapeHtml(m.avatar || "😀")}</span>`}
             <div style="flex:1;min-width:0">
               <div style="font-weight:600;font-size:0.78rem;color:var(--accent)">${escapeHtml(m.name)}</div>
-              <div style="color:var(--text);word-wrap:break-word">${m.imageUrl ? `<img src="${escapeHtml(m.imageUrl)}" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" onerror="this.style.display='none'" loading="lazy">` : linkify(escapeHtml(m.text))}</div>
+              <div style="color:var(--text);word-wrap:break-word">${m.imageUrl ? `<img src="${escapeHtml(m.imageUrl)}" style="max-width:200px;max-height:200px;border-radius:8px;display:block;margin-top:4px" onerror="this.style.display='none'" loading="lazy">` : linkify(m.text)}</div>
             </div>
             <span style="font-size:0.65rem;color:var(--muted);flex-shrink:0;font-family:var(--mono)">${m.time ? new Date(m.time.toMillis ? m.time.toMillis() : m.time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : ""}</span>
           </div>`;
         }).join("");
-        msgsContainer.scrollTop = msgsContainer.scrollHeight;
+        if (wasNearBottom) msgsContainer.scrollTop = msgsContainer.scrollHeight;
+      }, err => {
+        msgsContainer.innerHTML = '<div class="user-list__empty">Xabarlar yuklanmadi: ' + escapeHtml(err.message) + '</div>';
       });
     document.getElementById("groupChatInput")?.focus();
   }
