@@ -98,6 +98,7 @@
       a.classList.toggle("active", a.getAttribute("href") === "#" + id);
     });
     if (id === "admin") renderAdminPanel();
+    if (id === "bot") renderBotPanel();
     if (id === "leaderboard") renderLeaderboard();
     if (id === "shop") renderShop();
     if (id === "tasks") renderTasks();
@@ -1084,6 +1085,56 @@
       renderDashboard();
       renderTasks();
     } catch (e) { showToast(e.message); }
+  }
+
+  // ── Bot Panel ──
+
+  async function renderBotPanel() {
+    const container = document.getElementById("botPanel");
+    if (!container) return;
+    if (!authUser) { container.innerHTML = '<p class="muted">Avval profilingizga kiring.</p>'; return; }
+    const doc = await firebase.firestore().collection("users").doc(authUser.uid).get();
+    const data = doc.data() || {};
+    const coins = data.coins || 0;
+    container.innerHTML = `
+      <div class="card" style="display:flex;flex-direction:column;gap:0.75rem">
+        <p>💳 Firebase balansingiz: <strong>${coins} ◎</strong></p>
+        <p class="muted" style="font-size:0.85rem">Tangalaringizni Telegram botga yuboring. Botda <strong>/claim</strong> buyrug'ini yozib, pulni balansingizga qo'shishingiz mumkin.</p>
+        <div style="display:flex;gap:0.5rem">
+          <input type="number" id="botAmountInput" class="modal__input" placeholder="Miqdor" min="1" max="${coins}" style="flex:1" />
+          <button type="button" class="btn primary" id="botSendBtn">Yuborish</button>
+        </div>
+        <div id="botStatus" style="font-size:0.85rem"></div>
+      </div>
+      <div class="card" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.4rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span>Telegramda <strong>/claim</strong> yozing</span>
+          <button type="button" class="btn ghost" id="botCheckBtn">🔄 Tekshirish</button>
+        </div>
+        <div id="botClaimStatus" class="muted" style="font-size:0.85rem"></div>
+      </div>
+    `;
+    document.getElementById("botSendBtn").addEventListener("click", async () => {
+      const inp = document.getElementById("botAmountInput");
+      const amount = parseInt(inp.value);
+      const status = document.getElementById("botStatus");
+      if (!amount || amount <= 0) { status.textContent = "❌ Miqdorni kiriting!"; return; }
+      if (amount > coins) { status.textContent = "❌ Balansingiz yetarli emas!"; return; }
+      try {
+        await firebase.firestore().collection("users").doc(authUser.uid).update({
+          coins: firebase.firestore.FieldValue.increment(-amount),
+          pendingBotAmount: firebase.firestore.FieldValue.increment(amount)
+        });
+        status.innerHTML = `✅ ${amount}◎ yuborildi! Telegram botda /claim yozing.`;
+        inp.value = "";
+        renderBotPanel();
+      } catch (e) { status.textContent = "❌ Xatolik: " + e.message; }
+    });
+    document.getElementById("botCheckBtn").addEventListener("click", async () => {
+      const d = await firebase.firestore().collection("users").doc(authUser.uid).get();
+      const pending = (d.data() || {}).pendingBotAmount || 0;
+      document.getElementById("botClaimStatus").textContent = pending > 0 ? `📌 ${pending}◎ kutilmoqda. /claim yozing.` : "Hech narsa yo'q.";
+    });
   }
 
   // ── Leaderboard ──
