@@ -1152,7 +1152,11 @@
       const snap = await firebase.firestore().collection("users")
         .orderBy(sortField, "desc").limit(50).get();
       const entries = [];
-      snap.forEach(d => entries.push({ id: d.id, ...d.data() }));
+      snap.forEach(d => {
+        const data = d.data();
+        if (data.username === "aziko") return;
+        entries.push({ id: d.id, ...data });
+      });
       const meId = authUser?.uid;
       // Highlight active filter button
       document.querySelectorAll(".lb-filter").forEach(b => {
