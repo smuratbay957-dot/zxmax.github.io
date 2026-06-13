@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Color Block — Blok joylash</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a14; color: #e2e8f0; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; touch-action: none;
+      user-select: none; -webkit-user-select: none;
+    }
+    .game-wrap { max-width: 480px; width: 100%; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+    /* header */
+    .header { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 0; }
+    .h-left { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; background: linear-gradient(135deg,#00f0ff,#7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .h-right { display: flex; align-items: center; gap: 10px; }
+    .h-coin { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
+    .h-coin .num { color: #f59e0b; font-weight: 700; }
+    .h-score { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
+    .h-score .num { color: #00f0ff; font-weight: 700; }
+
+    /* grid */
+    .grid-wrap {
+      background: #12121f; border: 1px solid #2a2a4a; border-radius: 16px;
+      padding: 8px; display: inline-block; position: relative;
+    }
+    #grid {
+      display: grid; gap: 2px; width: 100%;
+    }
+    .cell {
+      aspect-ratio: 1; border-radius: 4px; transition: all 0.15s;
+    }
+    .cell.empty { background: #1a1a2e; border: 1px solid #222244; }
+    .cell.filled { border: 1px solid rgba(255,255,255,0.1); }
+    .cell.highlight { background: rgba(0,240,255,0.15) !important; }
+
+    /* piece preview */
+    .preview-wrap { width: 100%; }
+    .preview-label { font-size: 0.75rem; color: #64748b; margin-bottom: 6px; text-align: center; }
+    .pieces-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+      justify-items: center;
+    }
+    .piece-btn {
+      background: #1a1a2e; border: 2px solid #2a2a4a; border-radius: 14px;
+      padding: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+      min-height: 60px; width: 100%;
+    }
+    .piece-btn:hover { border-color: #00f0ff; transform: scale(1.03); }
+    .piece-btn.active { border-color: #00f0ff; box-shadow: 0 0 12px rgba(0,240,255,0.2); }
+    .mini-grid { display: inline-grid; gap: 2px; }
+    .mini-cell { width: 20px; height: 20px; border-radius: 3px; }
+
+    /* controls */
+    .ctrl-row { display: flex; gap: 10px; width: 100%; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      padding: 10px 24px; border: 1px solid #2a2a4a; border-radius: 12px;
+      cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.2s;
+      background: #1a1a2e; color: #e2e8f0; font-family: inherit;
+    }
+    .btn:hover { transform: scale(1.05); }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+    .btn.primary { background: #00f0ff; color: #000; border-color: #00f0ff; }
+    .btn.primary:hover { box-shadow: 0 0 16px rgba(0,240,255,0.3); }
+    .btn.gold { background: linear-gradient(135deg,#f59e0b,#d97706); color: #000; border: none; }
+    .btn.gold:hover { box-shadow: 0 0 16px rgba(245,158,11,0.3); }
+    .btn.danger { background: #ef4444; color: #fff; border-color: #ef4444; }
+    .btn.sm { padding: 6px 14px; font-size: 0.78rem; }
+
+    /* game over */
+    .go-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.7); display: none;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .go-overlay.open { display: flex; }
+    .go-box {
+      background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 24px;
+      padding: 32px 24px; text-align: center; max-width: 340px; width: 100%;
+      animation: scaleIn 0.3s ease;
+    }
+    .go-box h2 { font-size: 1.5rem; margin-bottom: 4px; }
+    .go-box .score { font-size: 2rem; font-weight: 800; color: #00f0ff; margin: 8px 0; }
+    .go-box .coins-earned { font-size: 1rem; color: #f59e0b; margin-bottom: 16px; }
+    .go-box .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+    @keyframes scaleIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* clear animation */
+    .cell.clearing { animation: clearPop 0.3s ease; }
+    @keyframes clearPop { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.7; } 100% { transform: scale(0); opacity: 0; } }
+
+    /* resp */
+    @media (max-width: 400px) {
+      .game-wrap { padding: 10px 8px; }
+      .piece-btn { min-height: 48px; padding: 4px; }
+      .mini-cell { width: 16px; height: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-wrap">
+  <div class="header">
+    <div class="h-left">COLOR BLOCK</div>
+    <div class="h-right">
+      <div class="h-score">🏆 <span class="num" id="scoreDisplay">0</span></div>
+      <div class="h-coin">🪙 <span class="num" id="coinDisplay">0</span></div>
+    </div>
+  </div>
+
+  <div class="grid-wrap">
+    <div id="grid"></div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="preview-label">Keyingi bloklarni joylang</div>
+    <div class="pieces-row" id="piecesRow"></div>
+  </div>
+
+  <div class="ctrl-row">
+    <button class="btn gold" id="newGameBtn">🔄 Yangi o'yin</button>
+    <button class="btn primary" id="collectBtn">📥 Tangalarni yig'ish</button>
+  </div>
+  <div style="font-size:0.7rem;color:#64748b;text-align:center;">
+    Qator/ustun to'ldiring → blok yo'qoladi. Joy qolmasa — o'yin tugadi.
+  </div>
+</div>
+
+<div class="go-overlay" id="goOverlay">
+  <div class="go-box">
+    <h2>🎮 O'yin tugadi</h2>
+    <div class="score" id="finalScore">0</div>
+    <div style="font-size:0.85rem;color:#64748b;">ball</div>
+    <div class="coins-earned">+<span id="finalCoins">0</span> 🪙 ishlab topildi</div>
+    <div class="btn-row">
+      <button class="btn gold" id="goRestartBtn">🔄 Qayta</button>
+      <a class="btn primary" href="../../zxmax/index.html#games">⬅ ZXMAX</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const GRID_SIZE = 8;
+const PIECE_COLORS = ['#00f0ff','#7c3aed','#f59e0b','#ec4899','#10b981','#ef4444','#3b82f6','#f97316'];
+
+// Block shapes [row, col] offsets
+const SHAPES = [
+  [[0,0],[0,1]],                    // 2-horizontal
+  [[0,0],[1,0]],                    // 2-vertical
+  [[0,0],[0,1],[0,2]],              // 3-horizontal
+  [[0,0],[1,0],[2,0]],              // 3-vertical
+  [[0,0],[0,1],[0,2],[0,3]],        // 4-horizontal
+  [[0,0],[1,0],[2,0],[3,0]],        // 4-vertical
+  [[0,0],[0,1],[1,0],[1,1]],        // 2x2 square
+  [[0,0],[0,1],[0,2],[1,2]],        // L (short)
+  [[0,0],[0,1],[0,2],[1,0]],        // L reverse
+  [[0,0],[1,0],[1,1],[1,2]],        // L down
+  [[0,2],[1,0],[1,1],[1,2]],        // T
+  [[0,0],[1,0],[1,1],[2,0]],        // Z
+  [[0,1],[1,0],[1,1],[1,2]],        // Z reverse
+  [[0,0],[0,1],[1,1]],              // small L
+  [[0,0],[1,0],[1,1]],              // small L reverse
+  [[0,0],[0,1],[1,0]],              // corner
+  [[0,0],[1,0],[2,0],[2,1]],        // long L
+  [[0,0],[0,1],[1,0],[2,0]],        // long L reverse
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let grid = [];
+let pieces = []; // 3 pieces to choose from
+let score = 0;
+let coins = 0;
+let gameOver = false;
+let selectedPiece = null;
+let comboCount = 0;
+const COINS_PER_SCORE = 2;  // 1 coin per 2 points
+const GAME_ID = 'colorblock';
+
+function initGrid() {
+  grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
+}
+
+function randomColor() { return PIECE_COLORS[Math.floor(Math.random() * PIECE_COLORS.length)]; }
+
+function randomShape() { return SHAPES[Math.floor(Math.random() * SHAPES.length)]; }
+
+function generatePiece() {
+  const shape = randomShape();
+  const color = randomColor();
+  // normalize to 0,0
+  const minR = Math.min(...shape.map(c => c[0]));
+  const minC = Math.min(...shape.map(c => c[1]));
+  const norm = shape.map(c => [c[0] - minR, c[1] - minC]);
+  // compute w,h
+  const h = Math.max(...norm.map(c => c[0])) + 1;
+  const w = Math.max(...norm.map(c => c[1])) + 1;
+  return { shape: norm, color, w, h };
+}
+
+function generatePieces() {
+  pieces = [generatePiece(), generatePiece(), generatePiece()];
+}
+
+function getRows() {
+  const rows = [];
+  for (let r = 0; r < GRID_SIZE; r++) {
+    if (grid[r].every(c => c !== null)) rows.push(r);
+  }
+  return rows;
+}
+
+function getCols() {
+  const cols = [];
+  for (let c = 0; c < GRID_SIZE; c++) {
+    let full = true;
+    for (let r = 0; r < GRID_SIZE; r++) { if (grid[r][c] === null) { full = false; break; } }
+    if (full) cols.push(c);
+  }
+  return cols;
+}
+
+function canPlace(piece, row, col) {
+  for (const [dr, dc] of piece.shape) {
+    const r = row + dr, c = col + dc;
+    if (r < 0 || r >= GRID_SIZE || c < 0 || c >= GRID_SIZE) return false;
+    if (grid[r][c] !== null) return false;
+  }
+  return true;
+}
+
+function placePiece(piece, row, col) {
+  for (const [dr, dc] of piece.shape) {
+    grid[row + dr][col + dc] = piece.color;
+  }
+  score += piece.shape.length;
+  updateUI();
+
+  // Check clears
+  let cleared = false;
+  let round = 0;
+  while (true) {
+    const rows = getRows();
+    const cols = getCols();
+    if (rows.length === 0 && cols.length === 0) break;
+    cleared = true;
+    round++;
+    // Clear them
+    for (const r of rows) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        const cell = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+        if (cell) cell.classList.add('clearing');
+      }
+    }
+    for (const c of cols) {
+      for (let r = 0; r < GRID_SIZE; r++) {
+        const cell = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+        if (cell) cell.classList.add('clearing');
+      }
+    }
+
+    // Award points
+    const lines = rows.length + cols.length;
+    const bonus = lines * 10 * round;
+    score += bonus;
+
+    // Actually clear after animation
+    setTimeout(() => {
+      for (const r of rows) for (let c = 0; c < GRID_SIZE; c++) grid[r][c] = null;
+      for (const c of cols) for (let r = 0; r < GRID_SIZE; r++) grid[r][c] = null;
+      renderGrid();
+    }, 200);
+
+    // If we cleared, wait and check again (combo)
+    if (round > 1) comboCount++;
+  }
+
+  if (cleared) {
+    comboCount++;
+  }
+  updateUI();
+}
+
+function hasAnyMove() {
+  for (let pi = 0; pi < pieces.length; pi++) {
+    const p = pieces[pi];
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        if (canPlace(p, r, c)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function checkGameOver() {
+  if (!hasAnyMove()) {
+    gameOver = true;
+    const earned = Math.floor(score / COINS_PER_SCORE);
+    coins += earned;
+    saveCoins();
+    document.getElementById('finalScore').textContent = score;
+    document.getElementById('finalCoins').textContent = earned;
+    document.getElementById('goOverlay').classList.add('open');
+    // Record play
+    if (window.parent && window.parent.recordGamePlay) {
+      window.parent.recordGamePlay(GAME_ID, earned, score);
+    }
+    updateUI();
+  }
+}
+
+// ═══════════════════════════════════════════
+// COIN SYNC
+// ═══════════════════════════════════════════
+function getLsKey() {
+  try {
+    const uid = localStorage.getItem('zxmax_active_profile_v1');
+    if (uid) return 'zxmax_save_v1__' + uid;
+  } catch {}
+  return 'zxmax_save_v1';
+}
+
+function loadCoins() {
+  try {
+    const raw = localStorage.getItem(getLsKey());
+    if (raw) {
+      const d = JSON.parse(raw);
+      coins = d.coins || 0;
+    }
+  } catch {}
+}
+
+function saveCoins() {
+  try {
+    const key = getLsKey();
+    let data = { coins: 0, totalEarned: 0, totalSpent: 0 };
+    try { const raw = localStorage.getItem(key); if (raw) data = JSON.parse(raw); } catch {}
+    data.coins = (data.coins || 0) + Math.floor(score / COINS_PER_SCORE) - data._lastCoins || 0;
+    // Better: just store running total
+    localStorage.setItem(key, JSON.stringify({
+      coins: coins,
+      totalEarned: (data.totalEarned || 0) + Math.max(0, Math.floor(score / COINS_PER_SCORE)),
+      totalSpent: data.totalSpent || 0,
+    }));
+  } catch {}
+}
+
+function collectCoins() {
+  const earned = Math.floor(score / COINS_PER_SCORE) - (window._lastCollected || 0);
+  if (earned <= 0) { alert('Hali tanga ishlab topilmagan'); return; }
+  saveCoins();
+  window._lastCollected = Math.floor(score / COINS_PER_SCORE);
+  alert(`✅ ${earned} 🪙 zxmax hisobiga yozildi! Asosiy saytda tangalaringiz yangilanadi.`);
+  updateUI();
+}
+
+// ═══════════════════════════════════════════
+// UI RENDER
+// ═══════════════════════════════════════════
+function renderGrid() {
+  const el = document.getElementById('grid');
+  el.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+  el.innerHTML = '';
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + (grid[r][c] ? 'filled' : 'empty');
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      if (grid[r][c]) cell.style.background = grid[r][c];
+      // click to place selected piece
+      cell.addEventListener('click', () => handleCellClick(r, c));
+      el.appendChild(cell);
+    }
+  }
+  // highlight piece previews
+  renderPieces();
+}
+
+function renderPieces() {
+  const row = document.getElementById('piecesRow');
+  row.innerHTML = '';
+  for (let i = 0; i < pieces.length; i++) {
+    const p = pieces[i];
+    const btn = document.createElement('div');
+    btn.className = 'piece-btn' + (selectedPiece === i ? ' active' : '');
+    const mini = document.createElement('div');
+    mini.className = 'mini-grid';
+    mini.style.gridTemplateColumns = `repeat(${p.w}, 20px)`;
+    mini.style.gridTemplateRows = `repeat(${p.h}, 20px)`;
+    for (let r = 0; r < p.h; r++) {
+      for (let c = 0; c < p.w; c++) {
+        const mc = document.createElement('div');
+        mc.className = 'mini-cell';
+        const filled = p.shape.some(s => s[0] === r && s[1] === c);
+        mc.style.background = filled ? p.color : 'transparent';
+        mc.style.borderRadius = filled ? '3px' : '0';
+        mini.appendChild(mc);
+      }
+    }
+    btn.appendChild(mini);
+    btn.addEventListener('click', () => {
+      selectedPiece = (selectedPiece === i) ? null : i;
+      renderPieces();
+      clearHighlights();
+    });
+    row.appendChild(btn);
+  }
+}
+
+function clearHighlights() {
+  document.querySelectorAll('.cell.highlight').forEach(el => el.classList.remove('highlight'));
+}
+
+function handleCellClick(r, c) {
+  if (gameOver) return;
+  if (selectedPiece === null) return;
+  const piece = pieces[selectedPiece];
+  if (!piece) return;
+  if (canPlace(piece, r, c)) {
+    placePiece(piece, r, c);
+    // Remove used piece, generate new one
+    pieces.splice(selectedPiece, 1);
+    pieces.push(generatePiece());
+    selectedPiece = null;
+    clearHighlights();
+    renderPieces();
+    renderGrid();
+    checkGameOver();
+  } else {
+    // highlight error briefly
+    const cell = document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+    if (cell) { cell.style.background = 'rgba(239,68,68,0.3)'; setTimeout(() => { cell.style.background = ''; renderGrid(); }, 300); }
+  }
+}
+
+function updateUI() {
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('coinDisplay').textContent = Math.floor(score / COINS_PER_SCORE);
+}
+
+// ═══════════════════════════════════════════
+// HOVER PREVIEW
+// ═══════════════════════════════════════════
+document.getElementById('grid').addEventListener('mouseover', (e) => {
+  const cell = e.target.closest('.cell');
+  if (!cell || selectedPiece === null || gameOver) return;
+  const r = parseInt(cell.dataset.r), c = parseInt(cell.dataset.c);
+  const piece = pieces[selectedPiece];
+  if (!piece || !canPlace(piece, r, c)) return;
+  for (const [dr, dc] of piece.shape) {
+    const el = document.querySelector(`.cell[data-r="${r + dr}"][data-c="${c + dc}"]`);
+    if (el) el.classList.add('highlight');
+  }
+});
+document.getElementById('grid').addEventListener('mouseout', () => clearHighlights());
+
+// touch for mobile
+document.getElementById('grid').addEventListener('touchstart', (e) => {
+  const cell = e.target.closest('.cell');
+  if (!cell || selectedPiece === null || gameOver) return;
+  // touch just clicks, no hover
+}, { passive: true });
+
+// ═══════════════════════════════════════════
+// RESIZE
+// ═══════════════════════════════════════════
+function resizeGrid() {
+  const wrap = document.querySelector('.grid-wrap');
+  const maxW = Math.min(wrap.clientWidth, 400);
+  const gridEl = document.getElementById('grid');
+  if (gridEl) gridEl.style.width = maxW + 'px';
+}
+window.addEventListener('resize', resizeGrid);
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function newGame() {
+  document.getElementById('goOverlay').classList.remove('open');
+  initGrid();
+  score = 0;
+  comboCount = 0;
+  gameOver = false;
+  selectedPiece = null;
+  window._lastCollected = 0;
+  generatePieces();
+  renderGrid();
+  updateUI();
+  resizeGrid();
+}
+
+document.getElementById('newGameBtn').addEventListener('click', newGame);
+document.getElementById('collectBtn').addEventListener('click', collectCoins);
+document.getElementById('goRestartBtn').addEventListener('click', newGame);
+
+// Load coin balance
+loadCoins();
+newGame();
+</script>
+</body>
+</html>

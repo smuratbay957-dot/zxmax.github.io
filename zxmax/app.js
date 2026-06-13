@@ -2,7 +2,7 @@
   "use strict";
 
   const AVATARS = ["😀", "😎", "🚀", "👑", "🦸", "🎮", "💎", "🔥", "⭐", "🌈", "🦁", "🐉", "🤖", "👾", "🎯", "🏆", "🕶️", "🐱"];
-  const GAME_IDS = ["xotira", "galaxy", "quiz", "snake", "tictactoe", "numberguess", "reaksiya"];
+  const GAME_IDS = ["xotira", "galaxy", "quiz", "snake", "tictactoe", "numberguess", "reaksiya", "colorblock"];
 
   const PROFILE_THEMES = [
     { id: "default", label: "Standard", bg: "#0f0f1a", card: "#1a1a2e", accent: "#7c3aed", text: "#e2e8f0", icon: "⚫" },
@@ -782,7 +782,7 @@
     const container = document.getElementById("gameStatsList");
     if (!container) return;
     const stats = getGameStats();
-    const labels = { xotira: "Xotira", galaxy: "Galaxy Tycoon", quiz: "Quiz", snake: "Snake", tictactoe: "Tic-Tac-Toe", numberguess: "Son topish", reaksiya: "Reaksiya" };
+    const labels = { xotira: "Xotira", galaxy: "Galaxy Tycoon", quiz: "Quiz", snake: "Snake", tictactoe: "Tic-Tac-Toe", numberguess: "Son topish", reaksiya: "Reaksiya", colorblock: "Color Block" };
     const played = GAME_IDS.filter(g => stats[g] && stats[g].plays > 0);
     if (played.length === 0) {
       container.innerHTML = '<div class="user-list__empty">Hali o\'yin o\'ynalmagan</div>';
