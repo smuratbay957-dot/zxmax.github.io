@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Galaxy Tycoon: Ultra Edition</title>
+    <title data-i18n="gt_title">Galaxy Tycoon: Ultra Edition</title>
     <link rel="icon" href="https://img.icons8.com/fluency/48/rocket.png">
     <style>
         :root { 
@@ -133,8 +133,9 @@
     <div id="stars-container"></div>
 
     <div class="stats-bar">
-        <div>Pul: <span id="stat-bal" style="color:var(--gold)">0</span> 💰</div>
-        <div>Keladigon foyda: <span id="stat-psv" style="color:var(--green)">0</span> 💰 / 2s</div>
+        <div data-i18n="gt_balance">Pul: <span id="stat-bal" style="color:var(--gold)">0</span> 💰</div>
+        <div data-i18n="gt_income">Keladigon foyda: <span id="stat-psv" style="color:var(--green)">0</span> 💰 / 2s</div>
+        <button onclick="openModal('settings-modal')" style="background:none;border:none;color:white;font-size:clamp(18px,4vw,24px);cursor:pointer;padding:0 8px;" title="Sozlamalar">⚙️</button>
     </div>
 
     <div id="main-menu">
@@ -147,6 +148,7 @@
             <button class="btn" style="background:#ec4899" onclick="openModal('shop-modal')">Do'kon 🎭</button>
             <button class="btn" style="background:#4b5563; grid-column: span 2;" onclick="openModal('promo-modal')">PROMO-KOD 🎟️</button>
             <button class="btn" style="background:#f97316; grid-column: span 2;" onclick="openTransferModal()">zxmax ga o'tkazish 💰</button>
+            <button class="btn" style="background:#64748b; grid-column: span 2;" onclick="openModal('settings-modal')">Sozlamalar ⚙️</button>
         </div>
         <button class="btn" style="width: min(80%, 300px); margin-top: 20px; font-size: clamp(16px, 4vw, 20px); background: #10b981;" onclick="startGame()">Oyinni boshlash 🚀</button>
         <a href="../../zxmax/index.html" style="position:fixed;bottom:10px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.4);font-size:clamp(11px,2.5vw,13px);text-decoration:none;z-index:2000;padding:8px 16px;border-radius:8px;background:rgba(0,0,0,0.3);backdrop-filter:blur(4px)">← zxmax ga qaytish</a>
@@ -199,6 +201,25 @@
         </div>
     </div>
 
+    <div id="settings-modal" class="modal" style="display:none;">
+        <div class="menu-card">
+            <h2 style="color:var(--accent)" data-i18n="gt_settings">Sozlamalar</h2>
+            <div style="margin:15px 0;">
+                <label style="display:block;margin-bottom:5px;" data-i18n="gt_music">Musiqa ovoz:</label>
+                <input type="range" id="music-vol" min="0" max="100" value="30" style="width:100%;">
+            </div>
+            <div style="margin:15px 0;">
+                <label style="display:block;margin-bottom:5px;" data-i18n="gt_sfx">Effektlar ovoz:</label>
+                <input type="range" id="sfx-vol" min="0" max="100" value="100" style="width:100%;">
+            </div>
+            <div style="margin:15px 0;">
+                <label style="display:block;margin-bottom:5px;" data-i18n="gt_lang">Til:</label>
+                <button class="btn" style="background:#475569;width:100%;" onclick="closeModals()" data-i18n="gt_lang_btn">Tilni almashtirish</button>
+            </div>
+            <button class="btn" style="background:transparent;margin-top:10px;" onclick="closeModals()" data-i18n="gt_back">Orqaga</button>
+        </div>
+    </div>
+
     <div id="result-modal" class="modal" style="display:none;">
         <div class="menu-card">
             <h1 style="color:var(--gold)">VAQIT BITTI!</h1>
@@ -213,6 +234,7 @@
         <div style="position:fixed; top:100px; left:30px; font-size:clamp(28px,8vw,40px); font-weight:bold; color:#ef4444; text-shadow: 2px 2px #000; z-index:2100;">⏱️ <span id="game-time">30</span></div>
     </div>
 
+    <script src="../../zxmax/lang.js"></script>
     <script>
         const sounds = {
             click: new Audio('https://www.fesliyanstudios.com/play-mp3/6'),
@@ -290,6 +312,40 @@
             localStorage.setItem('gt_up_lvl', JSON.stringify(gameData.upgrades));
             localStorage.setItem('gt_promos', JSON.stringify(gameData.usedPromos));
         }
+
+        // Sound volume controls
+        const savedMusicVol = localStorage.getItem('gt_music_vol');
+        const savedSfxVol = localStorage.getItem('gt_sfx_vol');
+        if (savedMusicVol !== null) sounds.bg.volume = savedMusicVol / 100;
+        if (savedSfxVol !== null) {
+            const v = savedSfxVol / 100;
+            sounds.click.volume = v;
+            sounds.error.volume = v;
+            sounds.win.volume = v;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const musicSlider = document.getElementById('music-vol');
+            const sfxSlider = document.getElementById('sfx-vol');
+            if (musicSlider) {
+                musicSlider.value = savedMusicVol !== null ? savedMusicVol : 30;
+                musicSlider.addEventListener('input', function() {
+                    const v = parseInt(this.value) / 100;
+                    sounds.bg.volume = v;
+                    localStorage.setItem('gt_music_vol', this.value);
+                });
+            }
+            if (sfxSlider) {
+                sfxSlider.value = savedSfxVol !== null ? savedSfxVol : 100;
+                sfxSlider.addEventListener('input', function() {
+                    const v = parseInt(this.value) / 100;
+                    sounds.click.volume = v;
+                    sounds.error.volume = v;
+                    sounds.win.volume = v;
+                    localStorage.setItem('gt_sfx_vol', this.value);
+                });
+            }
+        });
 
         function updateUI() {
             document.getElementById('stat-bal').innerText = Math.floor(gameData.balance).toLocaleString();

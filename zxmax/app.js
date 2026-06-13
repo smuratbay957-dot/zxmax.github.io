@@ -1014,15 +1014,15 @@
   // ── Tasks ──
 
   const TASKS = [
-    { id: "play_any", label: "Bitta o'yin o'yna", reward: 5, icon: "🎮", check: () => GAME_IDS.some(g => (getGameStats()[g]?.plays || 0) > 0) },
-    { id: "play_3", label: "3 ta o'yin o'yna", reward: 10, icon: "🎮", check: () => GAME_IDS.reduce((s, g) => s + (getGameStats()[g]?.plays || 0), 0) >= 3 },
-    { id: "earn_50", label: "50◎ tanga ishlang", reward: 10, icon: "💰", check: () => (state?.totalEarned || 0) >= 50 },
-    { id: "earn_200", label: "200◎ tanga ishlang", reward: 20, icon: "💰", check: () => (state?.totalEarned || 0) >= 200 },
-    { id: "spend_30", label: "Do'konda 30◎ sarflang", reward: 8, icon: "🛒", check: () => (state?.totalSpent || 0) >= 30 },
-    { id: "spend_100", label: "Do'konda 100◎ sarflang", reward: 15, icon: "🛒", check: () => (state?.totalSpent || 0) >= 100 },
-    { id: "subscribe", label: "Kimdirga obuna bo'l", reward: 10, icon: "👥", check: () => (userData?.subscribedTo?.length || 0) > 0 },
-    { id: "daily_bonus", label: "Kunlik bonusni ol", reward: 8, icon: "🎁", check: () => !!state?.lastDaily && (Date.now() - state.lastDaily) < 86400000 },
-    { id: "quick_earn", label: "Tez tanga ishlat", reward: 5, icon: "⚡", check: () => (state?.lastQuickEarn || 0) > 0 },
+    { id: "play_any", label: window.__("task_play_one"), reward: 5, icon: "🎮", check: () => GAME_IDS.some(g => (getGameStats()[g]?.plays || 0) > 0) },
+    { id: "play_3", label: window.__("task_play_three"), reward: 10, icon: "🎮", check: () => GAME_IDS.reduce((s, g) => s + (getGameStats()[g]?.plays || 0), 0) >= 3 },
+    { id: "earn_50", label: window.__("task_earn_50"), reward: 10, icon: "💰", check: () => (state?.totalEarned || 0) >= 50 },
+    { id: "earn_200", label: window.__("task_earn_200"), reward: 20, icon: "💰", check: () => (state?.totalEarned || 0) >= 200 },
+    { id: "spend_30", label: window.__("task_shop_30"), reward: 8, icon: "🛒", check: () => (state?.totalSpent || 0) >= 30 },
+    { id: "spend_100", label: window.__("task_shop_100"), reward: 15, icon: "🛒", check: () => (state?.totalSpent || 0) >= 100 },
+    { id: "subscribe", label: window.__("task_subscribe"), reward: 10, icon: "👥", check: () => (userData?.subscribedTo?.length || 0) > 0 },
+    { id: "daily_bonus", label: window.__("task_daily_bonus"), reward: 8, icon: "🎁", check: () => !!state?.lastDaily && (Date.now() - state.lastDaily) < 86400000 },
+    { id: "quick_earn", label: window.__("task_quick_earn"), reward: 5, icon: "⚡", check: () => (state?.lastQuickEarn || 0) > 0 },
   ];
 
   function getTaskDay() {
@@ -1050,12 +1050,12 @@
           <div class="task-item__reward">+${t.reward}◎</div>
         </div>
         <div class="task-item__action">
-          ${completed ? '<span class="task-item__check">✔</span>' : canComplete ? '<button type="button" class="btn primary task-claim" data-task-id="' + escapeHtml(t.id) + '" style="font-size:0.78rem;padding:0.3rem 0.65rem">Olish</button>' : '<span class="task-item__lock">🔒</span>'}
+          ${completed ? '<span class="task-item__check">✔</span>' : canComplete ? '<button type="button" class="btn primary task-claim" data-task-id="' + escapeHtml(t.id) + '" style="font-size:0.78rem;padding:0.3rem 0.65rem">' + window.__("task_claim_btn") + '</button>' : '<span class="task-item__lock">🔒</span>'}
         </div>
       </div>`;
     }).join("");
     container.innerHTML =
-      '<div class="task-progress"><span class="task-progress__label">Bajarildi</span><span class="task-progress__count">' + completedCount + '/' + TASKS.length + '</span><span class="task-progress__reward">+' + totalReward + '◎</span></div>' +
+      '<div class="task-progress"><span class="task-progress__label">' + window.__("task_completed") + '</span><span class="task-progress__count">' + completedCount + '/' + TASKS.length + '</span><span class="task-progress__reward">+' + totalReward + '◎</span></div>' +
       container.innerHTML;
     container.querySelectorAll(".task-claim").forEach(btn => {
       btn.addEventListener("click", () => claimTask(btn.getAttribute("data-task-id")));
@@ -1079,7 +1079,7 @@
         monthEarned: firebase.firestore.FieldValue.increment(task.reward),
         dailyTasks: { _day: today, done },
       });
-      showToast("+" + task.reward + " tanga (vazifa)");
+      showToast(window.__("task_reward_toast").replace("{0}", task.reward));
       await loadUserData();
       syncProfileBar();
       renderDashboard();
@@ -1092,24 +1092,24 @@
   async function renderBotPanel() {
     const container = document.getElementById("botPanel");
     if (!container) return;
-    if (!authUser) { container.innerHTML = '<p class="muted">Avval profilingizga kiring.</p>'; return; }
+    if (!authUser) { container.innerHTML = '<p class="muted">' + window.__("bot_login_first") + '</p>'; return; }
     const doc = await firebase.firestore().collection("users").doc(authUser.uid).get();
     const data = doc.data() || {};
     const coins = data.coins || 0;
     container.innerHTML = `
       <div class="card" style="display:flex;flex-direction:column;gap:0.75rem">
-        <p>💳 Firebase balansingiz: <strong>${coins} ◎</strong></p>
-        <p class="muted" style="font-size:0.85rem">Tangalaringizni Telegram botga yuboring. Botda <strong>/claim</strong> buyrug'ini yozib, pulni balansingizga qo'shishingiz mumkin.</p>
+        <p>${window.__("bot_balance").replace("{0}", `<strong>${coins}</strong>`)}</p>
+        <p class="muted" style="font-size:0.85rem">${window.__("bot_instruction")}</p>
         <div style="display:flex;gap:0.5rem">
-          <input type="number" id="botAmountInput" class="modal__input" placeholder="Miqdor" min="1" max="${coins}" style="flex:1" />
-          <button type="button" class="btn primary" id="botSendBtn">Yuborish</button>
+          <input type="number" id="botAmountInput" class="modal__input" placeholder="${window.__("bot_amount_placeholder")}" min="1" max="${coins}" style="flex:1" />
+          <button type="button" class="btn primary" id="botSendBtn">${window.__("bot_send_btn")}</button>
         </div>
         <div id="botStatus" style="font-size:0.85rem"></div>
       </div>
       <div class="card" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.4rem">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span>Telegramda <strong>/claim</strong> yozing</span>
-          <button type="button" class="btn ghost" id="botCheckBtn">🔄 Tekshirish</button>
+          <span>${window.__("bot_claim_instruction")}</span>
+          <button type="button" class="btn ghost" id="botCheckBtn">${window.__("bot_check_btn")}</button>
         </div>
         <div id="botClaimStatus" class="muted" style="font-size:0.85rem"></div>
       </div>
@@ -1118,22 +1118,22 @@
       const inp = document.getElementById("botAmountInput");
       const amount = parseInt(inp.value);
       const status = document.getElementById("botStatus");
-      if (!amount || amount <= 0) { status.textContent = "❌ Miqdorni kiriting!"; return; }
-      if (amount > coins) { status.textContent = "❌ Balansingiz yetarli emas!"; return; }
+      if (!amount || amount <= 0) { status.textContent = window.__("bot_amount_error"); return; }
+      if (amount > coins) { status.textContent = window.__("bot_balance_error"); return; }
       try {
         await firebase.firestore().collection("users").doc(authUser.uid).update({
           coins: firebase.firestore.FieldValue.increment(-amount),
           pendingBotAmount: firebase.firestore.FieldValue.increment(amount)
         });
-        status.innerHTML = `✅ ${amount}◎ yuborildi! Telegram botda /claim yozing.`;
+        status.innerHTML = window.__("bot_success").replace("{0}", amount);
         inp.value = "";
         renderBotPanel();
-      } catch (e) { status.textContent = "❌ Xatolik: " + e.message; }
+      } catch (e) { status.textContent = window.__("bot_error_prefix") + e.message; }
     });
     document.getElementById("botCheckBtn").addEventListener("click", async () => {
       const d = await firebase.firestore().collection("users").doc(authUser.uid).get();
       const pending = (d.data() || {}).pendingBotAmount || 0;
-      document.getElementById("botClaimStatus").textContent = pending > 0 ? `📌 ${pending}◎ kutilmoqda. /claim yozing.` : "Hech narsa yo'q.";
+      document.getElementById("botClaimStatus").textContent = pending > 0 ? window.__("bot_pending").replace("{0}", pending) : window.__("bot_nothing");
     });
   }
 
