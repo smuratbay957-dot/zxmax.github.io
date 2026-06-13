@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus — shaxsiy reyting</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a14;
+      --bg2: #12121f;
+      --card: #1a1a2e;
+      --border: #2a2a4a;
+      --accent: #00f0ff;
+      --accent2: #7c3aed;
+      --gold: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --pink: #ec4899;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --overlay: rgba(0,0,0,0.6);
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    body.light {
+      --bg: #f1f5f9;
+      --bg2: #e2e8f0;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --overlay: rgba(0,0,0,0.3);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.4s, color 0.4s;
+    }
+    #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* ── scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── layout ── */
+    .app { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 20px 16px 100px; }
+
+    /* ── header ── */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; animation: slideDown 0.6s ease; }
+    .logo { font-size: 1.6rem; font-weight: 800; letter-spacing: 2px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .header-btn { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 6px 12px; cursor: pointer; transition: all 0.3s; color: var(--text); font-size: 0.85rem; font-family: var(--font); }
+    .header-btn:hover { border-color: var(--accent); transform: scale(1.05); }
+
+    /* ── profile card ── */
+    .profile-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; margin-bottom: 20px; text-align: center; animation: fadeUp 0.6s ease; }
+    .profile-card .avatar-wrap { position: relative; width: 84px; height: 84px; margin: 0 auto 12px; }
+    .profile-card .avatar { width: 84px; height: 84px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.4rem; transition: all 0.4s; margin: 0 auto; }
+    .profile-card .avatar.glow-default { background: linear-gradient(135deg, var(--accent), var(--accent2)); animation: pulseGlow 3s ease-in-out infinite; }
+    .profile-card .avatar.glow-gold { background: linear-gradient(135deg, #f59e0b, #d97706); animation: pulseGlow 3s ease-in-out infinite; }
+    .profile-card .avatar.glow-fire { background: linear-gradient(135deg, #ef4444, #f97316); animation: pulseGlow 3s ease-in-out infinite; }
+    .profile-card .avatar.glow-ghost { background: linear-gradient(135deg, #a78bfa, #818cf8); animation: pulseGlow 3s ease-in-out infinite; }
+    .profile-card h2 { font-size: 1.2rem; margin-bottom: 2px; }
+    .profile-card .tag { color: var(--muted); font-size: 0.8rem; margin-bottom: 4px; }
+    .profile-card .title-tag { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 0.7rem; background: var(--bg2); color: var(--muted); border: 1px solid var(--border); margin-bottom: 10px; }
+
+    .xp-wrap { margin: 12px 0 4px; }
+    .xp-info { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
+    .xp-bar { height: 8px; background: var(--bg2); border-radius: 10px; overflow: hidden; }
+    .xp-fill { height: 100%; width: 0%; border-radius: 10px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s ease; }
+
+    /* ── stats row ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; animation: fadeUp 0.8s ease; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px 6px; text-align: center; transition: transform 0.3s, border-color 0.3s; }
+    .stat-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .stat-card .icon { font-size: 1.3rem; margin-bottom: 2px; }
+    .stat-card .val { font-size: 1.2rem; font-weight: 700; }
+    .stat-card .lbl { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── daily bonus ── */
+    .daily-bonus { background: var(--card); border: 1px solid var(--gold); border-radius: 16px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; animation: fadeUp 0.7s ease; }
+    .db-left { display: flex; align-items: center; gap: 14px; }
+    .db-left .db-icon { font-size: 2rem; }
+    .db-left .db-text { font-size: 0.9rem; font-weight: 600; }
+    .db-left .db-sub { font-size: 0.75rem; color: var(--muted); }
+    .db-btn { background: linear-gradient(135deg, var(--gold), #d97706); border: none; border-radius: 12px; padding: 10px 22px; font-weight: 700; color: #000; cursor: pointer; transition: all 0.3s; font-family: var(--font); }
+    .db-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(245,158,11,0.3); }
+    .db-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+    .db-timer { font-size: 0.8rem; color: var(--muted); text-align: right; }
+
+    /* ── pomodoro ── */
+    .pomodoro { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; text-align: center; margin-bottom: 20px; animation: fadeUp 0.9s ease; }
+    .pomodoro .timer { font-size: 3.5rem; font-weight: 800; font-variant-numeric: tabular-nums; margin: 8px 0; letter-spacing: 4px; transition: color 0.3s; }
+    .pomodoro .timer.work { color: var(--accent); }
+    .pomodoro .timer.break { color: var(--green); }
+    .phase { font-size: 0.85rem; margin-bottom: 12px; transition: color 0.3s; }
+    .phase.active-work { color: var(--accent); }
+    .phase.active-break { color: var(--green); }
+    .pomo-sessions { font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; }
+    .btn-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── quests ── */
+    .quests { margin-bottom: 20px; }
+    .quest { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; transition: all 0.3s; cursor: pointer; animation: fadeUp 0.5s ease; }
+    .quest:hover { border-color: var(--accent); transform: translateX(4px); }
+    .quest.done { opacity: 0.5; border-color: var(--green); }
+    .quest.done .q-text { text-decoration: line-through; }
+    .quest .q-icon { font-size: 1.3rem; width: 32px; text-align: center; }
+    .quest .q-text { flex: 1; font-size: 0.9rem; }
+    .quest .q-reward { font-size: 0.78rem; color: var(--gold); font-weight: 600; white-space: nowrap; }
+    .quest .q-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: all 0.3s; flex-shrink: 0; }
+    .quest.done .q-check { background: var(--green); border-color: var(--green); }
+
+    /* ── chart ── */
+    .chart-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 20px; animation: fadeUp 0.8s ease; }
+    .chart-wrap canvas { width: 100%; height: 120px; display: block; border-radius: 8px; }
+
+    /* ── achievements ── */
+    .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .ach { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 6px; text-align: center; transition: all 0.3s; animation: fadeUp 0.6s ease; }
+    .ach.locked { opacity: 0.3; filter: grayscale(1); }
+    .ach .a-icon { font-size: 1.6rem; margin-bottom: 4px; }
+    .ach .a-name { font-size: 0.65rem; color: var(--muted); word-break: break-word; }
+    .ach.new-ach { border-color: var(--gold); animation: achPulse 1s ease 3; }
+    @keyframes achPulse { 0%,100%{box-shadow:0 0 0 rgba(245,158,11,0);} 50%{box-shadow:0 0 20px rgba(245,158,11,0.4);} }
+
+    /* ── buttons ── */
+    .btn { padding: 10px 22px; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.3s; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: var(--font); }
+    .btn:hover { transform: scale(1.05); }
+    .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+    .btn.primary:hover { box-shadow: 0 0 20px rgba(0,240,255,0.3); }
+    .btn.gold { background: linear-gradient(135deg, var(--gold), #d97706); color: #000; border: none; }
+    .btn.gold:hover { box-shadow: 0 0 20px rgba(245,158,11,0.3); }
+    .btn.pink { background: var(--pink); color: #fff; border-color: var(--pink); }
+    .btn.sm { padding: 6px 14px; font-size: 0.78rem; }
+    .btn.danger { background: var(--red); color: #fff; border-color: var(--red); }
+
+    /* ── modal ── */
+    .modal-overlay { position: fixed; inset: 0; z-index: 200; background: var(--overlay); display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 28px 24px; max-width: 480px; width: 100%; max-height: 80vh; overflow-y: auto; animation: scaleIn 0.3s ease; }
+    .modal h3 { font-size: 1.2rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .modal-close { float: right; background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; padding: 0 4px; }
+    .modal-close:hover { color: var(--text); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* ── shop ── */
+    .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .shop-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 14px 10px; text-align: center; transition: all 0.3s; }
+    .shop-item.owned { opacity: 0.5; border-color: var(--green); }
+    .shop-item .si-icon { font-size: 2rem; margin-bottom: 4px; }
+    .shop-item .si-name { font-size: 0.78rem; font-weight: 600; }
+    .shop-item .si-price { font-size: 0.7rem; color: var(--gold); margin: 4px 0 8px; }
+    .shop-item .btn { width: 100%; font-size: 0.75rem; padding: 6px 0; }
+
+    /* ── settings ── */
+    .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-row .sr-left { display: flex; align-items: center; gap: 10px; }
+    .setting-row .sr-label { font-size: 0.9rem; }
+    .setting-row .sr-desc { font-size: 0.72rem; color: var(--muted); }
+    .toggle { width: 44px; height: 24px; border-radius: 12px; background: var(--border); cursor: pointer; position: relative; transition: background 0.3s; flex-shrink: 0; }
+    .toggle.on { background: var(--accent); }
+    .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: all 0.3s; }
+    .toggle.on::after { left: 22px; }
+
+    /* ── referal ── */
+    .referal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-top: 10px; display: flex; gap: 8px; }
+    .referal-box input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: var(--font); outline: none; }
+    .referal-box input:focus { border-color: var(--accent); }
+
+    /* ── admin panel ── */
+    .admin-section { margin-top: 12px; }
+    .admin-section label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 4px; }
+    .admin-section input, .admin-section select { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; color: var(--text); font-family: var(--font); margin-bottom: 8px; outline: none; }
+    .admin-section input:focus { border-color: var(--accent); }
+
+    /* ── confetti canvas ── */
+    #confettiCanvas { position: fixed; inset: 0; z-index: 999; pointer-events: none; }
+
+    /* ── toast ── */
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--card); border: 1px solid var(--accent); border-radius: 14px; padding: 12px 24px; font-size: 0.9rem; z-index: 100; opacity: 0; transition: all 0.4s ease; pointer-events: none; box-shadow: 0 0 30px rgba(0,240,255,0.1); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(0,240,255,0.2); } 50% { box-shadow: 0 0 40px rgba(0,240,255,0.4), 0 0 60px rgba(124,58,237,0.2); } }
+
+    @media (max-width: 480px) {
+      .app { padding: 14px 12px 80px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .pomodoro .timer { font-size: 2.6rem; }
+      .daily-bonus { flex-direction: column; gap: 10px; text-align: center; }
+      .db-left { flex-direction: column; }
+      .shop-grid { grid-template-columns: repeat(2, 1fr); }
+      .modal { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="app">
+    <!-- header -->
+    <header class="header">
+      <div class="logo">NEXUS</div>
+      <div class="header-right">
+        <button class="header-btn" id="shopBtn">🏪</button>
+        <button class="header-btn" id="settingsBtn">⚙️</button>
+        <div class="lvl-badge" style="display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:0.8rem;">
+          ⚡ <span id="lvlDisplay" style="font-weight:700;color:var(--accent);">1</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- profile -->
+    <div class="profile-card">
+      <div class="avatar-wrap">
+        <div class="avatar glow-default" id="avatarEl">🧑‍🚀</div>
+      </div>
+      <h2 contenteditable="true" id="nameInput" spellcheck="false">Kashfiyotchi</h2>
+      <div class="title-tag" id="titleTag">—</div>
+      <div class="tag">daraja <span id="levelTag">1</span></div>
+      <div class="xp-wrap">
+        <div class="xp-info"><span>XP</span><span id="xpText">0 / 100</span></div>
+        <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+      </div>
+    </div>
+
+    <!-- daily bonus -->
+    <div class="daily-bonus">
+      <div class="db-left">
+        <div class="db-icon">🎁</div>
+        <div>
+          <div class="db-text">Kunlik bonus</div>
+          <div class="db-sub" id="dbSub">Har kuni kirib oling!</div>
+        </div>
+      </div>
+      <div>
+        <button class="db-btn" id="dbBtn">Olish</button>
+        <div class="db-timer" id="dbTimer"></div>
+      </div>
+    </div>
+
+    <!-- stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="icon">🔥</div><div class="val" id="statStreak">0</div><div class="lbl">Streak</div></div>
+      <div class="stat-card"><div class="icon">⭐</div><div class="val" id="statDone">0</div><div class="lbl">Bajarildi</div></div>
+      <div class="stat-card"><div class="icon">🏆</div><div class="val" id="statAch">0</div><div class="lbl">Yutuq</div></div>
+      <div class="stat-card"><div class="icon">⏱</div><div class="val" id="statPomo">0</div><div class="lbl">Fokus</div></div>
+    </div>
+
+    <!-- pomodoro -->
+    <div class="pomodoro">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="section-title" style="margin:0;"><span>⏱</span> Fokus</div>
+        <button class="btn sm" id="pomoStatsBtn">📊 Hisobot</button>
+      </div>
+      <div class="phase" id="phaseLabel">Ish vaqti</div>
+      <div class="timer work" id="timerDisplay">25:00</div>
+      <div class="pomo-sessions">Bugun: <span id="pomoToday">0</span> sessiya</div>
+      <div class="btn-row">
+        <button class="btn primary" id="pomoStartBtn">Boshlash</button>
+        <button class="btn" id="pomoResetBtn">Qayta</button>
+        <button class="btn sm pink" id="pomoSkipBtn">O'tish</button>
+      </div>
+    </div>
+
+    <!-- quests -->
+    <div class="quests">
+      <div class="section-title"><span>📋</span> Kunlik vazifalar</div>
+      <div id="questList"></div>
+    </div>
+
+    <!-- chart -->
+    <div class="chart-wrap">
+      <div class="section-title"><span>📈</span> 7 kunlik aktivlik</div>
+      <canvas id="chartCanvas"></canvas>
+    </div>
+
+    <!-- achievements -->
+    <div class="section-title"><span>🏅</span> Yutuqlar</div>
+    <div class="ach-grid" id="achGrid"></div>
+  </div>
+
+  <!-- ─── SHOP MODAL ─── -->
+  <div class="modal-overlay" id="shopModal">
+    <div class="modal">
+      <button class="modal-close" id="shopCloseBtn">&times;</button>
+      <h3><span>🏪</span> Do'kon</h3>
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">XP ga skin, avatar va unvonlar sotib oling</p>
+      <div style="margin-bottom:12px;font-size:0.85rem;color:var(--gold);font-weight:600;">💰 <span id="shopXp">0</span> XP</div>
+      <div class="shop-grid" id="shopGrid"></div>
+    </div>
+  </div>
+
+  <!-- ─── SETTINGS MODAL ─── -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <button class="modal-close" id="settingsCloseBtn">&times;</button>
+      <h3><span>⚙️</span> Sozlamalar</h3>
+
+      <div class="setting-row">
+        <div class="sr-left"><div>🌙</div><div><div class="sr-label">Qorong'i rejim</div><div class="sr-desc">Light / Dark tema</div></div></div>
+        <div class="toggle on" id="themeToggle"></div>
+      </div>
+
+      <div class="setting-row">
+        <div class="sr-left"><div>🔔</div><div><div class="sr-label">Ovoz</div><div class="sr-desc">Pomodoro tugaganda signal</div></div></div>
+        <div class="toggle on" id="sfxToggle"></div>
+      </div>
+
+      <div class="setting-row">
+        <div class="sr-left"><div>🎵</div><div><div class="sr-label">Musiqa</div><div class="sr-desc">Fon musiqa (beta)</div></div></div>
+        <div class="toggle" id="musicToggle"></div>
+      </div>
+
+      <div class="setting-row">
+        <div class="sr-left"><div>🔗</div><div><div class="sr-label">Referal</div><div class="sr-desc">Do'stlaringizni taklif qiling</div></div></div>
+        <div></div>
+      </div>
+      <div class="referal-box">
+        <input type="text" id="referalLink" readonly value="">
+        <button class="btn sm primary" id="refCopyBtn">Nusxa</button>
+      </div>
+
+      <div class="setting-row">
+        <div class="sr-left"><div>🗑</div><div><div class="sr-label">Ma'lumotlarni o'chirish</div><div class="sr-desc">Barcha progressni tiklash</div></div></div>
+        <button class="btn sm danger" id="resetBtn">O'chir</button>
+      </div>
+
+      <div style="margin-top:16px;font-size:0.7rem;color:var(--muted);text-align:center;">Nexus v1.0 — <span id="resetCount">0</span> marta o'chirilgan</div>
+    </div>
+  </div>
+
+  <!-- ─── ADMIN MODAL ─── -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal">
+      <button class="modal-close" id="adminCloseBtn">&times;</button>
+      <h3><span>🛠</span> Admin panel</h3>
+      <div class="admin-section">
+        <label>Qo'shimcha XP</label>
+        <input type="number" id="adminXpInput" value="100" min="1">
+        <button class="btn gold sm" id="adminXpBtn">+XP berish</button>
+      </div>
+      <div class="admin-section">
+        <label>Daraja o'zgartirish</label>
+        <input type="number" id="adminLevelInput" value="1" min="1">
+        <button class="btn gold sm" id="adminLevelBtn">Darajani o'rnat</button>
+      </div>
+      <div class="admin-section">
+        <label>Vazifa qo'shish</label>
+        <input type="text" id="adminQuestInput" placeholder="Vazifa nomi">
+        <input type="number" id="adminQuestXp" value="20" min="1" placeholder="XP">
+        <button class="btn gold sm" id="adminQuestBtn">Qo'shish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ACHIEVEMENT NOTIFICATION ─── -->
+  <div class="modal-overlay" id="achNotifyModal">
+    <div class="modal" style="text-align:center;max-width:340px;">
+      <h3 style="justify-content:center;">🏅 Yangi yutuq!</h3>
+      <div style="font-size:3rem;margin:8px 0;" id="achNotifIcon">🌟</div>
+      <div style="font-size:1.1rem;font-weight:700;" id="achNotifName">—</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;" id="achNotifDesc">+50 XP</div>
+      <button class="btn primary" id="achNotifOk">Ajoyib!</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ═══════════════════════════════════════════
+    // PARTICLES
+    // ═══════════════════════════════════════════
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+    function resizeCanvas() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+    resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+    for (let i = 0; i < 60; i++) {
+      particles.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5, r: Math.random() * 1.5 + 0.5, a: Math.random() * 0.5 + 0.2 });
+    }
+    function drawParticles() {
+      ctx.clearRect(0, 0, W, H);
+      for (let p of particles) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 240, 255, ${p.a})`; ctx.fill();
+      }
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y, dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(0, 240, 255, ${0.07 * (1 - dist / 120)})`; ctx.lineWidth = 0.5; ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(drawParticles);
+    }
+    drawParticles();
+
+    // ═══════════════════════════════════════════
+    // SOUND
+    // ═══════════════════════════════════════════
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new AudioCtx();
+      return audioCtx;
+    }
+
+    function playBeep(freq = 880, dur = 0.2) {
+      const s = JSON.parse(localStorage.getItem('nexus_sfx') || 'true');
+      if (!s) return;
+      try {
+        const ac = getAudioCtx();
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.connect(gain); gain.connect(ac.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, ac.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+        osc.start(ac.currentTime); osc.stop(ac.currentTime + dur);
+      } catch {}
+    }
+
+    function playMelody() {
+      const notes = [523.25, 659.25, 783.99, 1046.5];
+      notes.forEach((f, i) => setTimeout(() => playBeep(f, 0.15), i * 150));
+    }
+
+    // ═══════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════
+    const SAVE_KEY = 'nexus_save_v2';
+    let state = loadState();
+
+    function defaultState() {
+      return {
+        name: 'Kashfiyotchi', xp: 0, level: 1, streak: 0, doneCount: 0, ach: [],
+        lastActive: null, pomoMin: 0, pomoSessions: 0, pomoDate: '',
+        owned: [], avatar: '🧑‍🚀', skin: 'glow-default', title: '',
+        dailyBonusDate: null, dailyBonusStreak: 0,
+        history: {}, resetCount: 0, quests: null
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return defaultState();
+        return { ...defaultState(), ...JSON.parse(raw) };
+      } catch { return defaultState(); }
+    }
+
+    function saveState() { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+
+    const XP_BASE = 100, XP_MULT = 50;
+    function getXpForLevel(lvl) { return XP_BASE + (lvl - 1) * XP_MULT; }
+
+    function addXp(amount, noAchCheck) {
+      state.xp += amount;
+      let needed = getXpForLevel(state.level);
+      let leveled = false;
+      while (state.xp >= needed) {
+        state.xp -= needed;
+        state.level++;
+        needed = getXpForLevel(state.level);
+        leveled = true;
+        showToast(`⬆ Daraja ${state.level}!`);
+        playMelody();
+        startConfetti();
+      }
+      if (!noAchCheck) checkAch();
+      saveState();
+      render();
+      if (leveled) checkAch();
+    }
+
+    // ═══════════════════════════════════════════
+    // DAILY BONUS
+    // ═══════════════════════════════════════════
+    function canClaimBonus() {
+      if (!state.dailyBonusDate) return true;
+      const last = new Date(state.dailyBonusDate);
+      const now = new Date();
+      return now.toDateString() !== last.toDateString();
+    }
+
+    function claimBonus() {
+      if (!canClaimBonus()) return;
+      const today = new Date().toDateString();
+      if (state.dailyBonusDate) {
+        const last = new Date(state.dailyBonusDate);
+        const diff = Math.floor((new Date() - last) / 86400000);
+        if (diff === 1) state.dailyBonusStreak++;
+        else state.dailyBonusStreak = 1;
+      } else {
+        state.dailyBonusStreak = 1;
+      }
+      state.dailyBonusDate = new Date().toISOString();
+      const bonus = 10 + Math.floor(Math.random() * 41); // 10-50
+      addXp(bonus);
+      showToast(`🎁 Bonus: +${bonus} XP! (${state.dailyBonusStreak} kun)`);
+      saveState();
+      render();
+    }
+
+    function getBonusTimer() {
+      if (!state.dailyBonusDate || canClaimBonus()) return null;
+      const last = new Date(state.dailyBonusDate);
+      const next = new Date(last);
+      next.setDate(next.getDate() + 1);
+      next.setHours(0, 0, 0, 0);
+      const diff = next - new Date();
+      if (diff <= 0) return null;
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    // ═══════════════════════════════════════════
+    // QUESTS (dynamic)
+    // ═══════════════════════════════════════════
+    function getQuests() {
+      const base = [
+        { id: 'focus', icon: '⏱', label: 'Fokusda 25 min ishla', xp: 30 },
+        { id: 'streak', icon: '🔥', label: 'Streakni saqla', xp: 20 },
+        { id: 'visit', icon: '👋', label: 'Saytga kir', xp: 10 },
+      ];
+      if (state.quests && Array.isArray(state.quests)) {
+        state.quests.forEach((q, i) => {
+          if (i < base.length) base[i].label = q.label;
+          base[i].xp = q.xp;
+        });
+        for (let i = base.length; i < state.quests.length; i++) {
+          base.push({ id: 'custom_' + i, icon: '📌', label: state.quests[i].label, xp: state.quests[i].xp });
+        }
+      }
+      return base;
+    }
+
+    function isQuestDone(id) {
+      const today = new Date().toDateString();
+      const last = state.lastActive || '';
+      if (id === 'focus') return (state.pomoMin || 0) >= 25;
+      if (id === 'streak') return state.streak > 0 && last === today;
+      if (id === 'visit') return last === today;
+      return false;
+    }
+
+    function completeQuest(id) {
+      if (isQuestDone(id)) return;
+      const q = getQuests().find(x => x.id === id);
+      if (!q) return;
+      const today = new Date().toDateString();
+      if (state.lastActive !== today) {
+        state.streak++;
+        state.lastActive = today;
+      }
+      state.doneCount++;
+      addXp(q.xp);
+      playBeep(660, 0.1);
+      showToast(`✅ ${q.label} +${q.xp} XP`);
+      render();
+    }
+
+    // ═══════════════════════════════════════════
+    // ACHIEVEMENTS
+    // ═══════════════════════════════════════════
+    const ACH = [
+      { id: 'first', icon: '🌟', name: 'Birinchi qadam', check: () => state.doneCount >= 1 },
+      { id: 'streak3', icon: '🔥', name: '3 kun streak', check: () => state.streak >= 3 },
+      { id: 'streak7', icon: '💫', name: '7 kun streak', check: () => state.streak >= 7 },
+      { id: 'streak30', icon: '⚡', name: '30 kun streak', check: () => state.streak >= 30 },
+      { id: 'done10', icon: '🎯', name: '10 vazifa', check: () => state.doneCount >= 10 },
+      { id: 'done50', icon: '🏆', name: '50 vazifa', check: () => state.doneCount >= 50 },
+      { id: 'lvl5', icon: '⭐', name: '5-daraja', check: () => state.level >= 5 },
+      { id: 'lvl10', icon: '👑', name: '10-daraja', check: () => state.level >= 10 },
+      { id: 'pomo5', icon: '⏱', name: '5 soat fokus', check: () => (state.pomoMin || 0) >= 300 },
+      { id: 'pomo10', icon: '🧘', name: '10 soat fokus', check: () => (state.pomoMin || 0) >= 600 },
+      { id: 'shop1', icon: '🛒', name: 'Birinchi xarid', check: () => (state.owned || []).length >= 1 },
+      { id: 'shop5', icon: '💎', name: 'Kollektsoioner', check: () => (state.owned || []).length >= 5 },
+    ];
+
+    let pendingAchNotif = null;
+
+    function checkAch() {
+      let newAch = [];
+      for (let a of ACH) {
+        if (!state.ach.includes(a.id) && a.check()) {
+          state.ach.push(a.id);
+          addXp(50, true);
+          newAch.push(a);
+        }
+      }
+      if (newAch.length) {
+        saveState();
+        render();
+        // show notification for first new achievement
+        const a = newAch[0];
+        document.getElementById('achNotifIcon').textContent = a.icon;
+        document.getElementById('achNotifName').textContent = a.name;
+        document.getElementById('achNotifDesc').textContent = '+50 XP';
+        document.getElementById('achNotifyModal').classList.add('open');
+        playMelody();
+      }
+      return newAch.length;
+    }
+
+    document.getElementById('achNotifOk').addEventListener('click', () => {
+      document.getElementById('achNotifyModal').classList.remove('open');
+    });
+
+    // ═══════════════════════════════════════════
+    // SHOP
+    // ═══════════════════════════════════════════
+    const SHOP_ITEMS = [
+      { id: 'avatar_astronaut', icon: '🧑‍🚀', name: 'Astronavt', type: 'avatar', price: 0 },
+      { id: 'avatar_ninja', icon: '🥷', name: 'Ninja', type: 'avatar', price: 100 },
+      { id: 'avatar_king', icon: '👑', name: 'Qirol', type: 'avatar', price: 250 },
+      { id: 'avatar_wizard', icon: '🧙', name: 'Sehrgar', type: 'avatar', price: 400 },
+      { id: 'avatar_cyborg', icon: '🤖', name: 'Cyborg', type: 'avatar', price: 600 },
+      { id: 'skin_gold', icon: '🟡', name: 'Oltin', type: 'skin', price: 200 },
+      { id: 'skin_fire', icon: '🔥', name: 'Olov', type: 'skin', price: 300 },
+      { id: 'skin_ghost', icon: '👻', name: 'Arvoh', type: 'skin', price: 500 },
+      { id: 'title_legend', icon: '🏅', name: 'Afsona', type: 'title', price: 800 },
+      { id: 'title_champ', icon: '🏆', name: 'Chempion', type: 'title', price: 500 },
+      { id: 'title_guru', icon: '🧠', name: 'Guru', type: 'title', price: 350 },
+    ];
+
+    function buyItem(itemId) {
+      const item = SHOP_ITEMS.find(x => x.id === itemId);
+      if (!item) return;
+      if (state.owned.includes(itemId)) return;
+      const totalXp = state.xp + getTotalSpentXp();
+      if (totalXp < item.price) { showToast('❌ XP yetarli emas'); return; }
+      // Take XP from current, allow negative but track total spent
+      const needed = item.price - state.xp;
+      if (needed > 0) showToast('❌ XP yetarli emas'); // shouldn't happen with total check
+      state.xp -= item.price;
+      state.owned.push(itemId);
+      if (item.type === 'avatar') {
+        state.avatar = item.icon;
+      }
+      if (item.type === 'skin') {
+        state.skin = item.id;
+        const avatarEl = document.getElementById('avatarEl');
+        avatarEl.className = 'avatar ' + ({
+          'skin_gold': 'glow-gold',
+          'skin_fire': 'glow-fire',
+          'skin_ghost': 'glow-ghost'
+        })[item.id] || 'glow-default';
+      }
+      if (item.type === 'title') {
+        state.title = item.name;
+      }
+      saveState();
+      renderShop();
+      checkAch();
+      render();
+      showToast(`✅ ${item.name} sotib olindi!`);
+      playBeep(880, 0.15);
+    }
+
+    function getTotalSpentXp() {
+      let total = 0;
+      for (let id of state.owned) {
+        const item = SHOP_ITEMS.find(x => x.id === id);
+        if (item) total += item.price;
+      }
+      return total;
+    }
+
+    function renderShop() {
+      const grid = document.getElementById('shopGrid');
+      const xpEl = document.getElementById('shopXp');
+      const totalXp = state.xp + getTotalSpentXp();
+      xpEl.textContent = totalXp;
+      grid.innerHTML = '';
+      for (let item of SHOP_ITEMS) {
+        const owned = state.owned.includes(item.id);
+        const div = document.createElement('div');
+        div.className = 'shop-item' + (owned ? ' owned' : '');
+        div.innerHTML = `
+          <div class="si-icon">${item.icon}</div>
+          <div class="si-name">${item.name}</div>
+          <div class="si-price">${owned ? '✅ Sotib olingan' : item.price + ' XP'}</div>
+          <button class="btn ${owned ? 'btn' : 'gold'} sm" ${owned ? 'disabled' : ''}>
+            ${owned ? 'Egalik' : 'Sotib ol'}
+          </button>
+        `;
+        if (!owned) {
+          div.querySelector('button').addEventListener('click', () => buyItem(item.id));
+        }
+        grid.appendChild(div);
+      }
+    }
+
+    // ═══════════════════════════════════════════
+    // POMODORO
+    // ═══════════════════════════════════════════
+    let pomoTime = 25 * 60, pomoRunning = false, pomoInterval = null, pomoPhase = 'work';
+    const POMO_WORK = 25 * 60, POMO_BREAK = 5 * 60;
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60), sec = s % 60;
+      return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+    }
+
+    function updatePomoDisplay() {
+      const el = document.getElementById('timerDisplay'), phase = document.getElementById('phaseLabel');
+      el.textContent = formatTime(pomoTime);
+      el.className = 'timer ' + (pomoPhase === 'work' ? 'work' : 'break');
+      phase.textContent = pomoPhase === 'work' ? 'Ish vaqti' : 'Tanaffus';
+      phase.className = 'phase ' + (pomoPhase === 'work' ? 'active-work' : 'active-break');
+    }
+
+    function pomoStart() {
+      if (pomoRunning) return;
+      pomoRunning = true;
+      document.getElementById('pomoStartBtn').textContent = 'Davom';
+      document.getElementById('pomoStartBtn').className = 'btn gold';
+      pomoInterval = setInterval(() => {
+        pomoTime--;
+        if (pomoTime <= 0) {
+          clearInterval(pomoInterval);
+          pomoInterval = null;
+          pomoRunning = false;
+          if (pomoPhase === 'work') {
+            state.pomoMin = (state.pomoMin || 0) + 25;
+            const today = new Date().toDateString();
+            if (state.pomoDate !== today) { state.pomoDate = today; state.pomoSessions = 0; }
+            state.pomoSessions = (state.pomoSessions || 0) + 1;
+            // history
+            if (!state.history) state.history = {};
+            state.history[today] = (state.history[today] || 0) + 25;
+            if (!isQuestDone('focus')) completeQuest('focus');
+            pomoPhase = 'break';
+            pomoTime = POMO_BREAK;
+            showToast('🎉 Tanaffus! 5 daqiqa');
+          } else {
+            pomoPhase = 'work';
+            pomoTime = POMO_WORK;
+            showToast('⏰ Ish vaqti!');
+          }
+          playBeep(1000, 0.3);
+          playBeep(1200, 0.3);
+          saveState();
+          document.getElementById('pomoStartBtn').textContent = 'Boshlash';
+          document.getElementById('pomoStartBtn').className = 'btn primary';
+          updatePomoDisplay();
+          render();
+          checkAch();
+          return;
+        }
+        updatePomoDisplay();
+      }, 1000);
+    }
+
+    function pomoReset() {
+      if (pomoInterval) { clearInterval(pomoInterval); pomoInterval = null; }
+      pomoRunning = false;
+      pomoPhase = 'work';
+      pomoTime = POMO_WORK;
+      document.getElementById('pomoStartBtn').textContent = 'Boshlash';
+      document.getElementById('pomoStartBtn').className = 'btn primary';
+      updatePomoDisplay();
+    }
+
+    function pomoSkip() {
+      if (pomoPhase === 'work') {
+        pomoTime = 5 * 60;
+        // don't grant XP on skip
+      }
+      pomoTime = 5;
+    }
+
+    document.getElementById('pomoStartBtn').addEventListener('click', pomoStart);
+    document.getElementById('pomoResetBtn').addEventListener('click', pomoReset);
+    document.getElementById('pomoSkipBtn').addEventListener('click', () => {
+      if (pomoRunning) {
+        clearInterval(pomoInterval);
+        pomoInterval = null;
+        pomoRunning = false;
+        document.getElementById('pomoStartBtn').textContent = 'Boshlash';
+        document.getElementById('pomoStartBtn').className = 'btn primary';
+      }
+      if (pomoPhase === 'work') pomoPhase = 'break', pomoTime = POMO_BREAK;
+      else pomoPhase = 'work', pomoTime = POMO_WORK;
+      updatePomoDisplay();
+    });
+
+    document.getElementById('pomoStatsBtn').addEventListener('click', () => {
+      showToast(`⏱ Bugun: ${state.pomoSessions || 0} sessiya, jami ${Math.floor((state.pomoMin || 0) / 60)} soat`);
+    });
+
+    // ═══════════════════════════════════════════
+    // CHART
+    // ═══════════════════════════════════════════
+    function drawChart() {
+      const cvs = document.getElementById('chartCanvas');
+      const parent = cvs.parentElement;
+      cvs.width = parent.clientWidth;
+      cvs.height = 120;
+      const c = cvs.getContext('2d');
+      const w = cvs.width, h = cvs.height;
+      c.clearRect(0, 0, w, h);
+
+      const days = 7;
+      const data = [];
+      const labels = [];
+      const now = new Date();
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const key = d.toDateString();
+        labels.push(d.toLocaleDateString('uz', { weekday: 'short' }));
+        data.push((state.history && state.history[key]) || 0);
+      }
+
+      const max = Math.max(...data, 1);
+      const pad = 20;
+      const barW = (w - pad * 2) / days - 6;
+      const barGap = 6;
+
+      for (let i = 0; i < days; i++) {
+        const x = pad + i * ((w - pad * 2) / days);
+        const bh = (data[i] / max) * (h - 30);
+        // bar
+        c.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00f0ff';
+        c.globalAlpha = 0.7 + (data[i] / max) * 0.3;
+        c.beginPath();
+        c.roundRect(x, h - 16 - bh, barW, bh, 4);
+        c.fill();
+        c.globalAlpha = 1;
+        // label
+        c.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim() || '#64748b';
+        c.font = '8px sans-serif';
+        c.textAlign = 'center';
+        c.fillText(labels[i], x + barW / 2, h - 4);
+        // value
+        if (data[i] > 0) {
+          c.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#e2e8f0';
+          c.font = 'bold 8px sans-serif';
+          c.fillText(data[i] + 'm', x + barW / 2, h - 18 - bh);
+        }
+      }
+    }
+
+    // roundRect polyfill for canvas
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        if (r > w / 2) r = w / 2;
+        if (r > h / 2) r = h / 2;
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r);
+        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r);
+        this.quadraticCurveTo(x, y, x + r, y);
+        this.closePath();
+      };
+    }
+
+    // ═══════════════════════════════════════════
+    // CONFETTI
+    // ═══════════════════════════════════════════
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const cctx = confettiCanvas.getContext('2d');
+    let confettiPieces = [], confettiRunning = false;
+
+    function startConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+      confettiPieces = [];
+      const colors = ['#00f0ff', '#7c3aed', '#f59e0b', '#ec4899', '#10b981', '#ef4444'];
+      for (let i = 0; i < 100; i++) {
+        confettiPieces.push({
+          x: Math.random() * confettiCanvas.width,
+          y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+          w: Math.random() * 8 + 4,
+          h: Math.random() * 6 + 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 3,
+          vy: Math.random() * 3 + 2,
+          rot: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 10,
+          opacity: 1
+        });
+      }
+      if (!confettiRunning) {
+        confettiRunning = true;
+        animateConfetti();
+      }
+    }
+
+    function animateConfetti() {
+      cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      let alive = false;
+      for (let p of confettiPieces) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.05;
+        p.rot += p.rotSpeed;
+        if (p.y > confettiCanvas.height + 20) continue;
+        alive = true;
+        cctx.save();
+        cctx.translate(p.x, p.y);
+        cctx.rotate(p.rot * Math.PI / 180);
+        cctx.globalAlpha = p.opacity;
+        cctx.fillStyle = p.color;
+        cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        cctx.restore();
+      }
+      if (alive) {
+        requestAnimationFrame(animateConfetti);
+      } else {
+        confettiRunning = false;
+        cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+
+    // ═══════════════════════════════════════════
+    // MODALS
+    // ═══════════════════════════════════════════
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    document.getElementById('shopBtn').addEventListener('click', () => { renderShop(); openModal('shopModal'); });
+    document.getElementById('shopCloseBtn').addEventListener('click', () => closeModal('shopModal'));
+    document.getElementById('settingsBtn').addEventListener('click', () => openModal('settingsModal'));
+    document.getElementById('settingsCloseBtn').addEventListener('click', () => closeModal('settingsModal'));
+    document.getElementById('adminCloseBtn').addEventListener('click', () => closeModal('adminModal'));
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+      el.addEventListener('click', (e) => { if (e.target === el) el.classList.remove('open'); });
+    });
+
+    // theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      themeToggle.classList.toggle('on');
+      localStorage.setItem('nexus_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+      setTimeout(drawChart, 100);
+    });
+    if (localStorage.getItem('nexus_theme') === 'light') {
+      document.body.classList.add('light');
+      themeToggle.classList.remove('on');
+    }
+
+    // sfx toggle
+    const sfxToggle = document.getElementById('sfxToggle');
+    sfxToggle.addEventListener('click', () => {
+      sfxToggle.classList.toggle('on');
+      localStorage.setItem('nexus_sfx', sfxToggle.classList.contains('on'));
+    });
+    if (JSON.parse(localStorage.getItem('nexus_sfx') || 'true')) sfxToggle.classList.add('on');
+
+    // music toggle
+    const musicToggle = document.getElementById('musicToggle');
+    let musicInterval = null;
+    musicToggle.addEventListener('click', () => {
+      musicToggle.classList.toggle('on');
+      if (musicToggle.classList.contains('on')) {
+        // ambient binaural-ish beeps every few seconds
+        musicInterval = setInterval(() => {
+          if (JSON.parse(localStorage.getItem('nexus_sfx') || 'true')) {
+            playBeep(200, 2);
+          }
+        }, 8000);
+        showToast('🎵 Fon musiqa yoqildi');
+      } else {
+        if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
+        showToast('🎵 Musiqa o\'chirildi');
+      }
+    });
+
+    // referal
+    document.getElementById('referalLink').value = window.location.href + '?ref=' + btoa(state.name);
+    document.getElementById('refCopyBtn').addEventListener('click', () => {
+      const inp = document.getElementById('referalLink');
+      inp.select(); navigator.clipboard.writeText(inp.value).then(() => showToast('🔗 Havola nusxalandi'));
+    });
+
+    // reset
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (confirm('Hamma ma\'lumotlar o\'chadi. Davom ettirilsinmi?')) {
+        state.resetCount = (state.resetCount || 0) + 1;
+        localStorage.removeItem(SAVE_KEY);
+        state = defaultState();
+        state.resetCount = (state.resetCount || 0);
+        saveState();
+        render();
+        closeModal('settingsModal');
+        showToast('🗑 Ma\'lumotlar o\'chirildi');
+      }
+    });
+
+    // admin (hidden - click logo 5 times)
+    let logoClickCount = 0;
+    document.querySelector('.logo').addEventListener('click', () => {
+      logoClickCount++;
+      if (logoClickCount >= 5) {
+        logoClickCount = 0;
+        openModal('adminModal');
+      }
+      setTimeout(() => logoClickCount = 0, 3000);
+    });
+
+    document.getElementById('adminXpBtn').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('adminXpInput').value) || 100;
+      addXp(val);
+      showToast(`+${val} XP berildi`);
+      closeModal('adminModal');
+    });
+    document.getElementById('adminLevelBtn').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('adminLevelInput').value) || 1;
+      state.level = Math.max(1, val);
+      state.xp = 0;
+      saveState();
+      render();
+      showToast(`Daraja ${state.level} ga o'rnatildi`);
+      closeModal('adminModal');
+    });
+    document.getElementById('adminQuestBtn').addEventListener('click', () => {
+      const name = document.getElementById('adminQuestInput').value.trim();
+      const xp = parseInt(document.getElementById('adminQuestXp').value) || 20;
+      if (!name) { showToast('❌ Vazifa nomini kiriting'); return; }
+      if (!state.quests) state.quests = [];
+      state.quests.push({ label: name, xp: xp });
+      saveState();
+      render();
+      showToast(`✅ Vazifa qo'shildi: ${name}`);
+      document.getElementById('adminQuestInput').value = '';
+      closeModal('adminModal');
+    });
+
+    // ═══════════════════════════════════════════
+    // RENDER
+    // ═══════════════════════════════════════════
+    function render() {
+      document.getElementById('lvlDisplay').textContent = state.level;
+      document.getElementById('levelTag').textContent = state.level;
+      const needed = getXpForLevel(state.level);
+      document.getElementById('xpText').textContent = `${state.xp} / ${needed}`;
+      document.getElementById('xpFill').style.width = `${(state.xp / needed) * 100}%`;
+
+      document.getElementById('statStreak').textContent = state.streak;
+      document.getElementById('statDone').textContent = state.doneCount;
+      document.getElementById('statAch').content = state.ach.length;
+      document.getElementById('statAch').textContent = state.ach.length;
+      document.getElementById('statPomo').textContent = Math.floor((state.pomoMin || 0) / 60) + 's';
+
+      document.getElementById('nameInput').textContent = state.name;
+      document.getElementById('pomoToday').textContent = state.pomoSessions || 0;
+      document.getElementById('titleTag').textContent = state.title || '—';
+      document.getElementById('resetCount').textContent = state.resetCount || 0;
+
+      // avatar
+      const avatarEl = document.getElementById('avatarEl');
+      avatarEl.textContent = state.avatar || '🧑‍🚀';
+      const skinMap = {
+        'skin_gold': 'glow-gold',
+        'skin_fire': 'glow-fire',
+        'skin_ghost': 'glow-ghost'
+      };
+      avatarEl.className = 'avatar ' + (skinMap[state.skin] || 'glow-default');
+
+      // daily bonus
+      const dbBtn = document.getElementById('dbBtn');
+      const dbSub = document.getElementById('dbSub');
+      const dbTimer = document.getElementById('dbTimer');
+      if (canClaimBonus()) {
+        dbBtn.disabled = false;
+        dbBtn.textContent = 'Olish';
+        dbSub.textContent = `${state.dailyBonusStreak > 0 ? state.dailyBonusStreak + ' kunlik streak! 🎉' : 'Har kuni kirib oling!'}`;
+        dbTimer.textContent = '';
+      } else {
+        dbBtn.disabled = true;
+        dbBtn.textContent = '✓ Olindi';
+        const t = getBonusTimer();
+        dbTimer.textContent = t ? t : '';
+        dbSub.textContent = 'Ertaga yana kel!';
+      }
+
+      // quests
+      const qList = document.getElementById('questList');
+      qList.innerHTML = '';
+      for (let q of getQuests()) {
+        const done = isQuestDone(q.id);
+        const div = document.createElement('div');
+        div.className = 'quest' + (done ? ' done' : '');
+        div.innerHTML = `<div class="q-icon">${q.icon}</div><div class="q-text">${q.label}</div><div class="q-reward">+${q.xp} XP</div><div class="q-check">${done ? '✓' : ''}</div>`;
+        if (!done) div.addEventListener('click', () => completeQuest(q.id));
+        qList.appendChild(div);
+      }
+
+      // achievements
+      const aGrid = document.getElementById('achGrid');
+      aGrid.innerHTML = '';
+      for (let a of ACH) {
+        const unlocked = state.ach.includes(a.id);
+        const div = document.createElement('div');
+        div.className = 'ach' + (unlocked ? '' : ' locked');
+        // new animation
+        const isNew = window._lastAchNotif && window._lastAchNotif === a.id;
+        div.innerHTML = `<div class="a-icon">${a.icon}</div><div class="a-name">${a.name}</div>`;
+        aGrid.appendChild(div);
+      }
+
+      // daily visit quest
+      const today = new Date().toDateString();
+      if (state.lastActive !== today && state.doneCount === 0 && getQuests().length > 0) {
+        // no auto-complete, user clicks
+      }
+      drawChart();
+    }
+
+    // name edit
+    const nameInput = document.getElementById('nameInput');
+    nameInput.addEventListener('blur', function() {
+      state.name = this.textContent.trim() || 'Kashfiyotchi';
+      saveState();
+    });
+    nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); } });
+
+    // ═══════════════════════════════════════════
+    // TOAST
+    // ═══════════════════════════════════════════
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    // ═══════════════════════════════════════════
+    // DAILY BONUS click
+    // ═══════════════════════════════════════════
+    document.getElementById('dbBtn').addEventListener('click', claimBonus);
+
+    // ═══════════════════════════════════════════
+    // REFERRAL detection
+    // ═══════════════════════════════════════════
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
+      if (ref) {
+        try {
+          const name = atob(ref);
+          showToast(`🔗 ${name} taklifi bilan keldingiz! +5 XP`);
+          addXp(5);
+        } catch {}
+      }
+    })();
+
+    // ═══════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════
+    render();
+    updatePomoDisplay();
+    setInterval(() => { checkAch(); }, 5000);
+    setInterval(() => { render(); }, 30000);
+    window.addEventListener('resize', drawChart);
+
+    // daily bonus timer update
+    setInterval(() => {
+      if (!canClaimBonus()) {
+        const t = getBonusTimer();
+        document.getElementById('dbTimer').textContent = t ? t : '';
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

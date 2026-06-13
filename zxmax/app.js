@@ -1256,6 +1256,12 @@
     if (chatUnsub) chatUnsub();
     updateChatNightState();
     setInterval(updateChatNightState, 30000);
+    checkMidnightCleanup();
+    setInterval(() => {
+      const h = new Date().getHours();
+      const m = new Date().getMinutes();
+      if (h === 0 && m === 0) checkMidnightCleanup();
+    }, 60000);
     chatUnsub = firebase.firestore().collection("chat")
       .orderBy("time", "asc").limit(100)
       .onSnapshot(snap => {
@@ -1294,6 +1300,28 @@
     document.getElementById("createGroupBtn")?.addEventListener("click", createGroup);
     document.getElementById("groupChatSendBtn")?.addEventListener("click", sendGroupMessage);
     document.getElementById("groupChatInput")?.addEventListener("keydown", e => { if (e.key === "Enter") sendGroupMessage(); });
+  }
+
+  async function checkMidnightCleanup() {
+    const today = new Date().toDateString();
+    const lastCleanup = localStorage.getItem("zxmax_chat_cleanup_date");
+    if (lastCleanup === today) return;
+    try {
+      const snapshot = await firebase.firestore().collection("chat").get();
+      if (snapshot.empty) { localStorage.setItem("zxmax_chat_cleanup_date", today); return; }
+      const batchSize = 490;
+      const docs = snapshot.docs;
+      for (let i = 0; i < docs.length; i += batchSize) {
+        const batch = firebase.firestore().batch();
+        const chunk = docs.slice(i, i + batchSize);
+        chunk.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+      }
+      localStorage.setItem("zxmax_chat_cleanup_date", today);
+      console.log("[chat] midnight cleanup: " + docs.length + " messages deleted");
+    } catch (e) {
+      console.warn("[chat] cleanup error:", e);
+    }
   }
 
   function updateChatNightState() {
